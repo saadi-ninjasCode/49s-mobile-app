@@ -68,6 +68,12 @@ export const useStyles = () => {
           backgroundColor: colors.drawerTitleColor,
           paddingHorizontal: scale(24),
           borderRadius: scale(6),
+          minWidth: scale(140),
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        btnDisabled: {
+          opacity: 0.6,
         },
       }),
     [colors],
