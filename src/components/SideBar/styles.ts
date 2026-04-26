@@ -23,14 +23,6 @@ export const useStyles = () => {
           fontWeight: '400',
           ...alignment.PLmedium,
         },
-        headerContainer: {
-          justifyContent: 'center',
-          height: scale(200),
-          borderBottomWidth: StyleSheet.hairlineWidth,
-          borderBottomColor: colors.sidebarDivider,
-          backgroundColor: colors.drawerHeader,
-          ...alignment.Pmedium,
-        },
         menuContainer: {
           backgroundColor: 'transparent',
           justifyContent: 'space-between',
@@ -49,6 +41,22 @@ export const useStyles = () => {
         },
         resultContainer: {
           ...alignment.PLlarge,
+        },
+        logoContainer: {
+          alignItems: 'center',
+          backgroundColor:"rgba(255,255,255,0.1)",
+          borderBottomColor: colors.sidebarDivider,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          paddingVertical: scale(20),
+          paddingHorizontal: scale(12),
+        },
+        logo: {
+          width: scale(64),
+          height: scale(64),
+          borderRadius: scale(12),
+        },
+        logoText: {
+          ...alignment.MTsmall,
         },
       }),
     [colors],

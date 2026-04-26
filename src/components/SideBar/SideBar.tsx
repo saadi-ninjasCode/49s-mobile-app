@@ -1,11 +1,13 @@
 import { DrawerContentScrollView, type DrawerContentComponentProps } from '@react-navigation/drawer';
 import { CommonActions, DrawerActions, useTheme } from '@react-navigation/native';
 import React from 'react';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import { dashboardInfo } from '../../mock/dashboard';
-import { DrawerItems, DrawerProfile } from '../Drawer';
+import { DrawerItems } from '../Drawer';
 import { TextDefault } from '../Text';
 import { useStyles } from './styles';
+
+const LOGO_SOURCE = require('../../../assets/images/icon.png');
 
 interface MenuConfig {
   title: string;
@@ -15,7 +17,6 @@ interface MenuConfig {
 
 const Home: MenuConfig = { title: 'Home', icon: 'home', navigateTo: 'index' };
 const TopMenus: MenuConfig[] = [
-  { title: 'Profile', icon: 'user', navigateTo: 'profile' },
   { title: 'Notifications', icon: 'bell', navigateTo: 'notification' },
   { title: 'Hot & Cold', icon: 'snowflake', navigateTo: 'favourite' },
   { title: 'Number Generator', icon: 'sync-alt', navigateTo: 'generator' },
@@ -39,8 +40,11 @@ function SideBar(props: DrawerContentComponentProps) {
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={styles.scrollContent}>
       <View style={styles.flexBg}>
-        <View style={styles.headerContainer}>
-          <DrawerProfile />
+        <View style={styles.logoContainer}>
+          <Image source={LOGO_SOURCE} style={styles.logo} resizeMode="contain" />
+          <TextDefault style={styles.logoText} textColor={colors.fontWhite} H4 bold>
+            {"49's Results"}
+          </TextDefault>
         </View>
         <View style={styles.menuContainer}>
           <View style={styles.transparent}>

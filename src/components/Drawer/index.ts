@@ -1,5 +1,4 @@
 import DrawerItems from './DrawerItems/DrawerItems';
-import DrawerProfile from './DrawerProfile/DrawerProfile';
 
-export { DrawerItems, DrawerProfile };
+export { DrawerItems };
 export type { DrawerItemsProps } from './DrawerItems/DrawerItems';

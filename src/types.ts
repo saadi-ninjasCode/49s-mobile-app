@@ -33,12 +33,6 @@ export interface FavouriteBallData {
   lottery: FavouriteLotterySection[];
 }
 
-export interface Profile {
-  _id: string;
-  name: string;
-  email: string;
-}
-
 export interface LotteryDraw extends Draw {
   lottery: Lottery;
 }

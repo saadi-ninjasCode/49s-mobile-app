@@ -65,6 +65,21 @@ export const useStyles = () => {
           ...alignment.MRxSmall,
           ...alignment.MTxSmall,
         },
+        viewAllButton: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          alignSelf: 'center',
+          gap: scale(8),
+          borderWidth: scale(1),
+          borderColor: colors.headerText,
+          borderRadius: scale(20),
+          paddingVertical: scale(6),
+          paddingHorizontal: scale(14),
+          ...alignment.MTlarge,
+        },
+        viewAllButtonPressed: {
+          opacity: 0.7,
+        },
       }),
     [colors],
   );

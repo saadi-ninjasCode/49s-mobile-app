@@ -15,7 +15,6 @@ declare global {
       sidebarDivider: string;
       brandAccent: string;
       lotteryBox: string;
-      loginBackground: string;
       switchBackground: string;
       boxShadow: string;
       spinnerColor: string;
