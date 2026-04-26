@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { colors, timeDifference } from '../../utilities';
 import { TextDefault } from '../Text';
@@ -8,22 +8,18 @@ export interface CounterProps {
   time?: number | null;
 }
 
-function Counter({ time }: CounterProps) {
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+function Counter({ time }: Readonly<CounterProps>) {
   const next_draw = time ?? null;
   const [timeLeft, setTimeLeft] = useState(() => timeDifference(next_draw));
 
   useEffect(() => {
-    if (timeLeft != null) {
-      const id = setInterval(() => {
-        setTimeLeft(timeDifference(next_draw));
-      }, 1000);
-      timer.current = id;
-    }
-    return () => {
-      if (timer.current) clearInterval(timer.current);
-    };
-  }, [next_draw, timeLeft]);
+    setTimeLeft(timeDifference(next_draw));
+    if (next_draw == null) return;
+    const id = setInterval(() => {
+      setTimeLeft(timeDifference(next_draw));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [next_draw]);
 
   return (
     <View style={styles.counterBox}>

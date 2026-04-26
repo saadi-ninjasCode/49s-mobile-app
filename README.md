@@ -1,50 +1,66 @@
-# Welcome to your Expo app 👋
+# 49's Results
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile app showing UK 49's lottery draw results, history, hot/cold ball stats, and a quick-pick number generator. Built with Expo SDK 54, expo-router, React 19, and React Native 0.81 on the New Architecture.
+
+## Stack
+
+- Expo SDK 54 (managed workflow) — New Architecture, React Compiler, typed routes all enabled
+- expo-router v6 with drawer navigation
+- React 19.1 / React Native 0.81.5
+- TypeScript (strict)
+
+## Project layout
+
+```
+app/                file-based routes (expo-router)
+  _layout.tsx       drawer + status bar setup
+  index.tsx         home / dashboard
+  lottery.tsx       single lottery details (typed params: lotteryId, name)
+  profile.tsx
+  notification.tsx
+  favourite.tsx     hot & cold balls
+  generator.tsx     quick-pick generator
+  condition.tsx
+  privacy.tsx
+src/
+  screen/           screen components, one per route
+  components/       reusable UI (MainCard, LotteryCard, Counter, SideBar, Text, ...)
+  utilities/        colors, scaling, alignment, time/date helpers (barrel-exported)
+  mock/             mock data (swap for real API — see below)
+  types.ts          shared domain types
+assets/images/      icons, splash, adaptive icons
+scripts/            project utility scripts
+```
+
+Routes in `app/` are intentionally thin wrappers that delegate to screen components in `src/screen/`.
 
 ## Get started
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npm install
+npm start                # expo start
+npm run android          # expo start --android
+npm run ios              # expo start --ios
+npm run web              # expo start --web
+npm run lint             # expo lint
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Data
 
-## Learn more
+All screens currently read from `src/mock/` (`dashboard.ts`, `draws.ts`, `favouriteBall.ts`, `profile.ts`). To wire up a real backend, add an `src/api/` folder with a `fetch`-based client that returns the same shapes as `src/types.ts`, and replace the mock imports in each screen.
 
-To learn more about developing your project with Expo, look at the following resources:
+API base URL should come from an `EXPO_PUBLIC_API_URL` environment variable so it stays out of the source.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Builds
 
-## Join the community
+This project is published to the Play Store via **manual builds** (no EAS). Native folders (`/ios`, `/android`) are gitignored and regenerated locally with `npx expo prebuild` before each build.
 
-Join our community of developers creating universal apps.
+```bash
+npx expo prebuild --clean
+# then build with the native toolchain (Xcode / Android Studio / gradle)
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Notes
+
+- `userInterfaceStyle` is locked to `"light"` because the app uses a fixed colour palette ([src/utilities/colors.ts](src/utilities/colors.ts)).
+- `predictiveBackGestureEnabled` is `false` on Android — re-evaluate before targeting Android 15+.
