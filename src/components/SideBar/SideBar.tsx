@@ -1,12 +1,11 @@
 import { DrawerContentScrollView, type DrawerContentComponentProps } from '@react-navigation/drawer';
-import { CommonActions, DrawerActions } from '@react-navigation/native';
+import { CommonActions, DrawerActions, useTheme } from '@react-navigation/native';
 import React from 'react';
 import { View } from 'react-native';
 import { dashboardInfo } from '../../mock/dashboard';
-import { colors } from '../../utilities';
 import { DrawerItems, DrawerProfile } from '../Drawer';
 import { TextDefault } from '../Text';
-import styles from './styles';
+import { useStyles } from './styles';
 
 interface MenuConfig {
   title: string;
@@ -27,6 +26,8 @@ const BottomMenu: MenuConfig[] = [
 ];
 
 function SideBar(props: DrawerContentComponentProps) {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   const { navigation, state } = props;
   const activeRouteName = state?.routes?.[state.index]?.name;
 

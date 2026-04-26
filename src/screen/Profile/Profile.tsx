@@ -1,12 +1,15 @@
+import { useTheme } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextDefault } from '../../components/Text';
 import { profile } from '../../mock/profile';
-import { alignment, colors } from '../../utilities';
-import styles from './styles';
+import { alignment } from '../../utilities';
+import { useStyles } from './styles';
 
 function Profile() {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState<string>(profile.name);
   const [nameError, setNameError] = useState<string>('');

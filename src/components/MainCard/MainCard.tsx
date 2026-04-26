@@ -1,15 +1,18 @@
 import { FontAwesome5 } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { View } from 'react-native';
 import type { DashboardEntry } from '../../types';
-import { alignment, colors, dateTransformation, getTime, scale } from '../../utilities';
+import { alignment, dateTransformation, getTime, scale } from '../../utilities';
 import Counter from '../Counter/Counter';
 import { TextDefault } from '../Text';
-import styles from './styles';
+import { useStyles } from './styles';
 
 type FontAwesome5Glyph = React.ComponentProps<typeof FontAwesome5>['name'];
 
 function MainCard(props: DashboardEntry) {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   const iconName = props.lottery.icon_name as FontAwesome5Glyph;
   return (
     <View>

@@ -1,3 +1,4 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { StyleSheet, Text, type StyleProp, type TextStyle } from 'react-native';
 import { textStyles } from '../../../utilities';
@@ -22,7 +23,8 @@ export interface TextDefaultProps {
 }
 
 function TextDefault(props: TextDefaultProps) {
-  const textColor = props.textColor ?? 'black';
+  const { colors } = useTheme() as NavigationTheme;
+  const textColor = props.textColor ?? colors.text;
   const defaultStyle: TextStyle = StyleSheet.flatten([
     color(textColor).color,
     textStyles.Normal,

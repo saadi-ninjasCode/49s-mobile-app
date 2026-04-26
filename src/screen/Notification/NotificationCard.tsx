@@ -1,9 +1,10 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import Checkbox from '../../components/Checkbox/Checkbox';
 import { TextDefault } from '../../components/Text';
-import { alignment, colors } from '../../utilities';
-import styles from './styles';
+import { alignment } from '../../utilities';
+import { useStyles } from './styles';
 
 export interface NotificationCardProps {
   name: string;
@@ -12,6 +13,8 @@ export interface NotificationCardProps {
 }
 
 function NotificationCard(props: NotificationCardProps) {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   return (
     <TouchableOpacity
       activeOpacity={0.7}

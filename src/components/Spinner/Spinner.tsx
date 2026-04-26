@@ -1,6 +1,6 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { ActivityIndicator } from 'react-native';
-import { colors } from '../../utilities';
 
 export interface SpinnerProps {
   backColor?: string;
@@ -9,6 +9,7 @@ export interface SpinnerProps {
 }
 
 function Spinner(props: SpinnerProps) {
+  const { colors } = useTheme() as NavigationTheme;
   return (
     <ActivityIndicator
       animating

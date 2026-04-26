@@ -4,11 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { dashboardInfo } from '../../mock/dashboard';
 import type { Lottery } from '../../types';
 import NotificationCard from './NotificationCard';
-import styles from './styles';
+import { useStyles } from './styles';
 
 type EnabledMap = Record<string, boolean>;
 
 function Notification() {
+  const styles = useStyles();
   const [enabled, setEnabled] = useState<EnabledMap>(() => {
     const seed: EnabledMap = {};
     dashboardInfo.forEach((entry, idx) => {

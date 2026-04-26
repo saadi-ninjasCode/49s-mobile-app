@@ -1,7 +1,8 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { TextDefault } from '../../components/Text';
-import { alignment, colors } from '../../utilities';
+import { alignment } from '../../utilities';
 
 export interface StubProps {
   title: string;
@@ -9,9 +10,19 @@ export interface StubProps {
 }
 
 function Stub({ title, subtitle }: StubProps) {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.mainBackground,
+      padding: 24,
+    },
+  });
   return (
     <View style={styles.container}>
-      <TextDefault textColor={colors.headerBackground} H2 bold center>
+      <TextDefault textColor={colors.brandAccent} H2 bold center>
         {title}
       </TextDefault>
       {subtitle ? (
@@ -25,15 +36,5 @@ function Stub({ title, subtitle }: StubProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.mainBackground,
-    padding: 24,
-  },
-});
 
 export default React.memo(Stub);

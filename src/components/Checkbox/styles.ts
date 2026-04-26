@@ -1,15 +1,22 @@
+import { useTheme } from '@react-navigation/native';
+import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
-import { colors, scale } from '../../utilities';
+import { scale } from '../../utilities';
 
-const styles = StyleSheet.create({
-  mainContainer: {
-    borderColor: colors.boxShadow,
-    borderWidth: StyleSheet.hairlineWidth,
-    width: scale(20),
-    height: scale(20),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
-
-export default styles;
+export const useStyles = () => {
+  const { colors } = useTheme() as NavigationTheme;
+  return useMemo(
+    () =>
+      StyleSheet.create({
+        mainContainer: {
+          borderColor: colors.boxShadow,
+          borderWidth: StyleSheet.hairlineWidth,
+          width: scale(20),
+          height: scale(20),
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+      }),
+    [colors],
+  );
+};

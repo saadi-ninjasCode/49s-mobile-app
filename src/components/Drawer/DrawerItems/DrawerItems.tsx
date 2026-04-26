@@ -1,11 +1,12 @@
-import { FontAwesome5 } from '@expo/vector-icons';
-import { DrawerItem } from '@react-navigation/drawer';
-import React from 'react';
-import { colors, scale } from '../../../utilities';
-import { TextDefault } from '../../Text';
-import styles from './styles';
+import { FontAwesome5 } from "@expo/vector-icons";
+import { DrawerItem } from "@react-navigation/drawer";
+import { useTheme } from "@react-navigation/native";
+import React from "react";
+import { scale } from "../../../utilities";
+import { TextDefault } from "../../Text";
+import styles from "./styles";
 
-type FontAwesome5Glyph = React.ComponentProps<typeof FontAwesome5>['name'];
+type FontAwesome5Glyph = React.ComponentProps<typeof FontAwesome5>["name"];
 
 export interface DrawerItemsProps {
   name?: string;
@@ -16,23 +17,24 @@ export interface DrawerItemsProps {
 }
 
 function DrawerItems(props: DrawerItemsProps) {
+  const { colors } = useTheme() as NavigationTheme;
   const isActive = props.active === true;
   return (
     <DrawerItem
+      inactiveTintColor={colors.fontWhite}
+      activeTintColor={colors.fontWhite}
       style={[
-        { marginVertical: 0, backgroundColor: 'transparent' },
+        { marginVertical: 0, backgroundColor: "transparent" },
         isActive && { backgroundColor: colors.drawerSelected },
       ]}
       onPress={props.onPress}
-      label={() => (
-        <TextDefault style={styles.font} textColor={colors.draweHeader}>
-          {' '}
+      label={({ color }) => (
+        <TextDefault style={styles.font} textColor={color}>
+          {" "}
           {props.text}
         </TextDefault>
       )}
-      icon={() => (
-        <FontAwesome5 name={props.icon as FontAwesome5Glyph} size={scale(15)} color="white" />
-      )}
+      icon={({ color }) => <FontAwesome5 name={props.icon as FontAwesome5Glyph} size={scale(15)} color={color} />}
     />
   );
 }

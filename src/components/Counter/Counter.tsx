@@ -1,14 +1,17 @@
+import { useTheme } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { colors, timeDifference } from '../../utilities';
+import { timeDifference } from '../../utilities';
 import { TextDefault } from '../Text';
-import styles from './styles';
+import { useStyles } from './styles';
 
 export interface CounterProps {
   time?: number | null;
 }
 
 function Counter({ time }: Readonly<CounterProps>) {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   const next_draw = time ?? null;
   const [timeLeft, setTimeLeft] = useState(() => timeDifference(next_draw));
 
@@ -23,7 +26,7 @@ function Counter({ time }: Readonly<CounterProps>) {
 
   return (
     <View style={styles.counterBox}>
-      <TextDefault textColor={colors.headerBackground} style={styles.leftSide} center bold>
+      <TextDefault textColor={colors.brandAccent} style={styles.leftSide} center bold>
         {'Next Draw'}
       </TextDefault>
       <View style={styles.counterContainer}>

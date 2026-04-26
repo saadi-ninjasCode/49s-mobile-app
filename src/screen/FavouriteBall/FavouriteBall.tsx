@@ -1,11 +1,12 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { SectionList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextDefault } from '../../components/Text';
 import { favouriteBall } from '../../mock/favouriteBall';
 import type { BallStat } from '../../types';
-import { alignment, colors } from '../../utilities';
-import styles from './styles';
+import { alignment } from '../../utilities';
+import { useStyles } from './styles';
 
 interface BallsProps {
   name: string;
@@ -14,6 +15,8 @@ interface BallsProps {
 }
 
 function Balls({ name, color, array }: BallsProps) {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   return (
     <View style={styles.box}>
       <View style={[styles.header, { borderColor: color }]}>
@@ -50,6 +53,8 @@ interface FavouriteSectionItem {
 }
 
 function FavouriteBall() {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   const sectionData = favouriteBall.lottery.map((item, index) => ({
     name: item.name,
     data: [{ hotBall: item.hotBall, coldBall: item.coldBall }] as FavouriteSectionItem[],

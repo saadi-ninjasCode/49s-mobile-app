@@ -1,11 +1,14 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { View } from 'react-native';
 import type { LotteryDraw } from '../../types';
-import { colors, dateTransformation, getZone } from '../../utilities';
+import { dateTransformation, getZone } from '../../utilities';
 import { TextDefault } from '../Text';
-import styles from './styles';
+import { useStyles } from './styles';
 
 function LotteryCard(props: LotteryDraw) {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   return (
     <View style={styles.lotteryBox}>
       <View style={styles.boxHeader}>

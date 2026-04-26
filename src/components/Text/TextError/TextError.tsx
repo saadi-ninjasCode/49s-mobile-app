@@ -1,6 +1,6 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { View } from 'react-native';
-import { colors } from '../../../utilities';
 import TextDefault from '../TextDefault/TextDefault';
 
 export interface TextErrorProps {
@@ -10,6 +10,7 @@ export interface TextErrorProps {
 }
 
 function TextError(props: TextErrorProps) {
+  const { colors } = useTheme() as NavigationTheme;
   return (
     <View
       style={{

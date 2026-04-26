@@ -1,3 +1,4 @@
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -5,18 +6,19 @@ import LotteryCard from '../../components/LotteryCard/LotteryCard';
 import { TextDefault, TextError } from '../../components/Text';
 import { getDrawsForLottery } from '../../mock/draws';
 import type { LotteryDraw } from '../../types';
-import { colors } from '../../utilities';
-import styles from './styles';
+import { useStyles } from './styles';
 
 export interface LotteryProps {
   lotteryId?: string | null;
 }
 
 function Lottery({ lotteryId }: LotteryProps) {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   const draws = getDrawsForLottery(lotteryId);
 
   if (!draws.length) {
-    return <TextError text={'Data is not available now.'} textColor={colors.headerBackground} />;
+    return <TextError text={'Data is not available now.'} textColor={colors.brandAccent} />;
   }
 
   const latest: LotteryDraw = draws[0];

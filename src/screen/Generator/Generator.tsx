@@ -1,13 +1,15 @@
+import { useTheme } from '@react-navigation/native';
 import React, { useRef, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextDefault } from '../../components/Text';
-import { colors } from '../../utilities';
-import styles from './styles';
+import { useStyles } from './styles';
 
 type BallValue = number | '?';
 
 function Generator() {
+  const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   const [balls, setBalls] = useState<BallValue[]>(['?', '?', '?', '?', '?', '?', '?']);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
