@@ -1,15 +1,8 @@
 import type { DashboardEntry, LotteryDraw } from '../types';
+import { randomBalls } from '../utilities/lottery';
 import { dashboardInfo } from './dashboard';
 
 const DAY = 24 * 60 * 60 * 1000;
-
-function randomBalls(count: number, max: number): number[] {
-  const set = new Set<number>();
-  while (set.size < count) {
-    set.add(Math.floor(Math.random() * max) + 1);
-  }
-  return [...set].sort((a, b) => a - b);
-}
 
 function buildHistory(entry: DashboardEntry): LotteryDraw[] {
   const baseDate = entry.draw?.date ?? Date.now();
