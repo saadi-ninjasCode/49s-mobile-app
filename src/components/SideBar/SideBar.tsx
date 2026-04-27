@@ -5,6 +5,7 @@ import { Image, View } from 'react-native';
 import { dashboardInfo } from '../../mock/dashboard';
 import { DrawerItems } from '../Drawer';
 import { TextDefault } from '../Text';
+import { ThemeSwitcher } from '../ThemeSwitcher';
 import { useStyles } from './styles';
 
 const LOGO_SOURCE = require('../../../assets/images/icon.png');
@@ -92,6 +93,7 @@ function SideBar(props: DrawerContentComponentProps) {
             ))}
           </View>
           <View style={styles.bottomMenu}>
+            <ThemeSwitcher />
             {BottomMenu.map((item) => (
               <DrawerItems
                 key={item.navigateTo}
