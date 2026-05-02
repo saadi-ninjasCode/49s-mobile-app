@@ -1,5 +1,5 @@
 import type { Draw, DrawWithContext, Game } from '../types';
-import { randomBalls, randomBoosterBall } from '../utilities/lottery';
+import { randomBalls, randomBoosterBall } from '../utilities/draw';
 import { drawTypes } from './drawTypes';
 import { games } from './games';
 

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, Pressable, Switch, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextDefault } from "../../components/Text";
-import { randomBalls } from "../../utilities/lottery";
+import { randomBalls } from "../../utilities/draw";
 import { useStyles } from "./styles";
 
 type BallValue = number | "?";
@@ -237,7 +237,7 @@ function Generator() {
               </View>
             )}
 
-            <View style={styles.lotteryBalls}>
+            <View style={styles.ballRow}>
               {mainBalls.map((value, index) => (
                 <View style={styles.ballContainer} key={slotIds[index]}>
                   <TextDefault textColor={colors.headerBackground} bold H4 center>

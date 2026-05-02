@@ -8,7 +8,7 @@ import {
   favouriteTimeTransformation,
   getTime,
   getZone,
-  lotteryBallsTransformation,
+  ballsTransformation,
 } from './stringManipulation';
 import { textStyles } from './textStyles';
 import { timeDifference } from './time';
@@ -22,7 +22,7 @@ export {
   getTime,
   getZone,
   isSameDay,
-  lotteryBallsTransformation,
+  ballsTransformation,
   scale,
   textStyles,
   timeDifference,

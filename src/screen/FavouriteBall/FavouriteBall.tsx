@@ -26,7 +26,7 @@ function Balls({ name, color, array }: BallsProps) {
       </View>
       <View style={styles.boxContainer}>
         <View style={styles.boxInfo}>
-          <View style={styles.lotteryBalls}>
+          <View style={styles.ballRow}>
             {array.map((objBall, i) => (
               <View style={{ justifyContent: "center", alignItems: "center" }} key={i}>
                 <View style={[styles.ballContainer, { backgroundColor: color }]}>

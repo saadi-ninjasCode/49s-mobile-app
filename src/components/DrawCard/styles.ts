@@ -11,7 +11,7 @@ export const useStyles = () => {
         font: {
           ...alignment.PxSmall,
         },
-        lotteryBox: {
+        drawBox: {
           backgroundColor: 'transparent',
           width: '100%',
           ...alignment.PLlarge,
@@ -25,7 +25,7 @@ export const useStyles = () => {
           paddingVertical: alignment.PBmedium.paddingBottom ?? 0,
           paddingHorizontal: alignment.PRxSmall.paddingRight ?? 0,
         },
-        lotteryBalls: {
+        ballRow: {
           width: '100%',
           backgroundColor: 'transparent',
           flexDirection: 'row',

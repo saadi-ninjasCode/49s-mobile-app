@@ -28,8 +28,8 @@ function ThemedDrawer() {
           drawerLabelStyle: { color: theme.colors.fontWhite },
         }}
       >
-        <Drawer.Screen name="index" options={{ title: "Lottery" }} />
-        <Drawer.Screen name="lottery" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="index" options={{ title: "Results" }} />
+        <Drawer.Screen name="draw" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="notification" options={{ title: "Notifications" }} />
         <Drawer.Screen name="favourite" options={{ title: "Hot & Cold" }} />
         <Drawer.Screen name="generator" options={{ title: "Number Generator" }} />

@@ -4,21 +4,21 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DatePickerField from "../../components/DatePickerField/DatePickerField";
-import LotteryCard from "../../components/LotteryCard/LotteryCard";
+import DrawCard from "../../components/DrawCard/DrawCard";
 import { TextDefault, TextError } from "../../components/Text";
 import { getDrawsForDrawType } from "../../mock/draws";
 import type { DrawWithContext } from "../../types";
 import { isSameDay, scale } from "../../utilities";
 import { useStyles } from "./styles";
 
-export interface LotteryProps {
+export interface DrawProps {
   gameId?: string | null;
   drawTypeId?: string | null;
 }
 
 const DEFAULT_LIMIT = 5;
 
-function Lottery({ drawTypeId }: LotteryProps) {
+function Draw({ drawTypeId }: DrawProps) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -81,19 +81,19 @@ function Lottery({ drawTypeId }: LotteryProps) {
 
       {!isFiltering && (
         <>
-          <TextDefault textColor={colors.lotteryBox} H4 center style={styles.headerStyles}>
+          <TextDefault textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
             {"Latest Result"}
           </TextDefault>
-          <LotteryCard {...latest} />
+          <DrawCard {...latest} />
           <View style={styles.separator} />
-          <TextDefault textColor={colors.lotteryBox} H4 center style={styles.headerStyles}>
+          <TextDefault textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
             {"Previous Results"}
           </TextDefault>
         </>
       )}
 
       {isFiltering && (
-        <TextDefault textColor={colors.lotteryBox} H4 center style={styles.headerStyles}>
+        <TextDefault textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
           {"Result"}
         </TextDefault>
       )}
@@ -120,10 +120,10 @@ function Lottery({ drawTypeId }: LotteryProps) {
         ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={[styles.mainBackground, styles.mainContainer]}
-        renderItem={({ item }) => <LotteryCard {...item} />}
+        renderItem={({ item }) => <DrawCard {...item} />}
       />
     </SafeAreaView>
   );
 }
 
-export default React.memo(Lottery);
+export default React.memo(Draw);

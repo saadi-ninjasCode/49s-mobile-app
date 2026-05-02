@@ -1,6 +1,6 @@
-export const LOTTERY_MAX = 49;
+export const MAX_BALL = 49;
 
-export function randomBalls(count: number, max: number = LOTTERY_MAX): number[] {
+export function randomBalls(count: number, max: number = MAX_BALL): number[] {
   const set = new Set<number>();
   while (set.size < count) {
     set.add(Math.floor(Math.random() * max) + 1);
@@ -8,7 +8,7 @@ export function randomBalls(count: number, max: number = LOTTERY_MAX): number[] 
   return [...set].sort((a, b) => a - b);
 }
 
-export function randomBoosterBall(exclude: number[], max: number = LOTTERY_MAX): number {
+export function randomBoosterBall(exclude: number[], max: number = MAX_BALL): number {
   const taken = new Set(exclude);
   let n: number;
   do {

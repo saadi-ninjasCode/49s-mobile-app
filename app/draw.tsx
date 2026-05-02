@@ -3,10 +3,10 @@ import { useTheme } from '@react-navigation/native';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import React, { useCallback, useLayoutEffect } from 'react';
 import { Pressable } from 'react-native';
-import Lottery from '../src/screen/Lottery/Lottery';
+import Draw from '../src/screen/Draw/Draw';
 import { scale } from '../src/utilities';
 
-export default function LotteryRoute() {
+export default function DrawRoute() {
   const params = useLocalSearchParams<{
     name?: string;
     gameId?: string;
@@ -44,5 +44,5 @@ export default function LotteryRoute() {
     });
   }, [navigation, params.name, handleBack, colors.headerText, showBack]);
 
-  return <Lottery gameId={params.gameId} drawTypeId={params.drawTypeId} />;
+  return <Draw gameId={params.gameId} drawTypeId={params.drawTypeId} />;
 }

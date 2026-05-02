@@ -33,20 +33,20 @@ function Counter({ time }: Readonly<CounterProps>) {
         {timeLeft ? (
           <>
             <View style={styles.timerbox}>
-              <TextDefault textColor={colors.headerBackground} small>{'Days'}</TextDefault>
-              <TextDefault textColor={colors.white} center bold>{String(timeLeft.days)}</TextDefault>
+              <TextDefault textColor={colors.headerBackground} small numberOfLines={1}>{'Days'}</TextDefault>
+              <TextDefault textColor={colors.white} center bold numberOfLines={1}>{String(timeLeft.days)}</TextDefault>
             </View>
             <View style={styles.timerbox}>
-              <TextDefault textColor={colors.headerBackground} small>{'Hour'}</TextDefault>
-              <TextDefault textColor={colors.white} center bold>{String(timeLeft.hours)}</TextDefault>
+              <TextDefault textColor={colors.headerBackground} small numberOfLines={1}>{'Hour'}</TextDefault>
+              <TextDefault textColor={colors.white} center bold numberOfLines={1}>{String(timeLeft.hours)}</TextDefault>
             </View>
             <View style={styles.timerbox}>
-              <TextDefault textColor={colors.headerBackground} small>{'Min'}</TextDefault>
-              <TextDefault textColor={colors.white} center bold>{String(timeLeft.minutes)}</TextDefault>
+              <TextDefault textColor={colors.headerBackground} small numberOfLines={1}>{'Min'}</TextDefault>
+              <TextDefault textColor={colors.white} center bold numberOfLines={1}>{String(timeLeft.minutes)}</TextDefault>
             </View>
             <View style={styles.timerbox}>
-              <TextDefault textColor={colors.headerBackground} small>{'Sec'}</TextDefault>
-              <TextDefault textColor={colors.white} center bold>{String(timeLeft.seconds)}</TextDefault>
+              <TextDefault textColor={colors.headerBackground} small numberOfLines={1}>{'Sec'}</TextDefault>
+              <TextDefault textColor={colors.white} center bold numberOfLines={1}>{String(timeLeft.seconds)}</TextDefault>
             </View>
           </>
         ) : (

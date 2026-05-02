@@ -11,7 +11,7 @@ export const useStyles = () => {
         font: {
           ...alignment.PxSmall,
         },
-        lotteryBox: {
+        drawBox: {
           backgroundColor: 'transparent',
           width: '100%',
           ...alignment.PBsmall,
@@ -43,12 +43,12 @@ export const useStyles = () => {
         boxInfo: {
           width: '100%',
           alignItems: 'center',
-          ...alignment.MTlarge,
-          ...alignment.PTlarge,
+          ...alignment.MTmedium,
+          ...alignment.PTmedium,
           ...alignment.PLxSmall,
           ...alignment.PRxSmall,
         },
-        lotteryBalls: {
+        ballRow: {
           width: '100%',
           backgroundColor: 'transparent',
           flexDirection: 'row',

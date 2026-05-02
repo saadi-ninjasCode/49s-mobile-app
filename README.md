@@ -1,6 +1,6 @@
 # 49's Results
 
-A mobile app showing UK 49's lottery draw results, history, hot/cold ball stats, and a quick-pick number generator. Built with Expo SDK 54, expo-router, React 19, and React Native 0.81 on the New Architecture.
+A mobile app showing UK 49's draw results, history, hot/cold ball stats, and a quick-pick number generator. Built with Expo SDK 54, expo-router, React 19, and React Native 0.81 on the New Architecture.
 
 ## Stack
 
@@ -15,7 +15,7 @@ A mobile app showing UK 49's lottery draw results, history, hot/cold ball stats,
 app/                file-based routes (expo-router)
   _layout.tsx       drawer + status bar setup
   index.tsx         home / dashboard
-  lottery.tsx       single lottery details (typed params: lotteryId, name)
+  draw.tsx          single draw details (typed params: gameId, drawTypeId, name)
   profile.tsx
   notification.tsx
   favourite.tsx     hot & cold balls
@@ -24,7 +24,7 @@ app/                file-based routes (expo-router)
   privacy.tsx
 src/
   screen/           screen components, one per route
-  components/       reusable UI (MainCard, LotteryCard, Counter, SideBar, Text, ...)
+  components/       reusable UI (MainCard, DrawCard, Counter, SideBar, Text, ...)
   utilities/        colors, scaling, alignment, time/date helpers (barrel-exported)
   mock/             mock data (swap for real API — see below)
   types.ts          shared domain types

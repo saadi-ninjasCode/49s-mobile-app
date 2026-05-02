@@ -1,14 +1,14 @@
-import { DrawerContentScrollView, type DrawerContentComponentProps } from '@react-navigation/drawer';
-import { CommonActions, DrawerActions, useTheme } from '@react-navigation/native';
-import React from 'react';
-import { Image, View } from 'react-native';
-import { dashboardInfo } from '../../mock/dashboard';
-import { DrawerItems } from '../Drawer';
-import { TextDefault } from '../Text';
-import { ThemeSwitcher } from '../ThemeSwitcher';
-import { useStyles } from './styles';
+import { DrawerContentScrollView, type DrawerContentComponentProps } from "@react-navigation/drawer";
+import { CommonActions, DrawerActions, useTheme } from "@react-navigation/native";
+import React from "react";
+import { Image, View } from "react-native";
+import { dashboardInfo } from "../../mock/dashboard";
+import { DrawerItems } from "../Drawer";
+import { TextDefault } from "../Text";
+import { ThemeSwitcher } from "../ThemeSwitcher";
+import { useStyles } from "./styles";
 
-const LOGO_SOURCE = require('../../../assets/images/icon.png');
+const LOGO_SOURCE = require("../../../assets/images/logo-image.png");
 
 interface MenuConfig {
   title: string;
@@ -16,15 +16,15 @@ interface MenuConfig {
   navigateTo: string;
 }
 
-const Home: MenuConfig = { title: 'Home', icon: 'home', navigateTo: 'index' };
+const Home: MenuConfig = { title: "Home", icon: "home", navigateTo: "index" };
 const TopMenus: MenuConfig[] = [
-  { title: 'Notifications', icon: 'bell', navigateTo: 'notification' },
-  { title: 'Hot & Cold', icon: 'snowflake', navigateTo: 'favourite' },
-  { title: 'Number Generator', icon: 'sync-alt', navigateTo: 'generator' },
+  { title: "Notifications", icon: "bell", navigateTo: "notification" },
+  { title: "Hot & Cold", icon: "snowflake", navigateTo: "favourite" },
+  { title: "Number Generator", icon: "sync-alt", navigateTo: "generator" },
 ];
 const BottomMenu: MenuConfig[] = [
-  { title: 'Terms & Conditions', icon: 'file-prescription', navigateTo: 'condition' },
-  { title: 'Privacy Policy', icon: 'file-signature', navigateTo: 'privacy' },
+  { title: "Terms & Conditions", icon: "file-prescription", navigateTo: "condition" },
+  { title: "Privacy Policy", icon: "file-signature", navigateTo: "privacy" },
 ];
 
 function SideBar(props: DrawerContentComponentProps) {
@@ -44,7 +44,7 @@ function SideBar(props: DrawerContentComponentProps) {
         <View style={styles.logoContainer}>
           <Image source={LOGO_SOURCE} style={styles.logo} resizeMode="contain" />
           <TextDefault style={styles.logoText} textColor={colors.fontWhite} H4 bold>
-            {"49's Results"}
+            {"UK 49's Results"}
           </TextDefault>
         </View>
         <View style={styles.menuContainer}>
@@ -60,18 +60,18 @@ function SideBar(props: DrawerContentComponentProps) {
             <View style={styles.line} />
             <View>
               <TextDefault style={styles.font} textColor={colors.fontWhite} H5>
-                {'Results'}
+                {"Results"}
               </TextDefault>
               <View style={styles.resultContainer}>
                 {dashboardInfo.map((entry) => (
                   <DrawerItems
                     key={entry.drawType._id}
-                    name={'lottery'}
+                    name={"draw"}
                     icon={entry.drawType.icon_name}
                     text={entry.drawType.name}
                     active={false}
                     onPress={() =>
-                      navigateAndClose('lottery', {
+                      navigateAndClose("draw", {
                         gameId: entry.game._id,
                         drawTypeId: entry.drawType._id,
                         name: entry.drawType.name,

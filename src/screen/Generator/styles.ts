@@ -95,7 +95,7 @@ export const useStyles = () => {
           justifyContent: 'space-between',
           ...alignment.MTmedium,
         },
-        lotteryBalls: {
+        ballRow: {
           width: '100%',
           backgroundColor: 'transparent',
           flexDirection: 'row',

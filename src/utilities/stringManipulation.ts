@@ -1,7 +1,7 @@
 import type { BallStat } from '../types';
 import { dateToCustom, dateToTime, dateToZone, dateWithWeekday } from './date';
 
-export const lotteryBallsTransformation = (balls: number[], pending: boolean): string => {
+export const ballsTransformation = (balls: number[], pending: boolean): string => {
   if (pending) return 'Pending';
   if (balls.length === 0) return '-';
   return balls.map((x) => (x ? String(x) : '-')).join(', ');

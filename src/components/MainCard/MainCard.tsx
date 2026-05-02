@@ -26,7 +26,7 @@ function MainCard(props: Readonly<DashboardEntry>) {
   );
   const handleViewAll = useCallback(() => {
     router.push({
-      pathname: "/lottery",
+      pathname: "/draw",
       params: { gameId, drawTypeId, name: drawTypeName, from: "card" },
     });
   }, [router, gameId, drawTypeId, drawTypeName]);
@@ -38,7 +38,7 @@ function MainCard(props: Readonly<DashboardEntry>) {
   const draw = props.latestDraw;
   return (
     <View>
-      <View style={styles.lotteryBox}>
+      <View style={styles.drawBox}>
         <View style={styles.boxHeader}>
           <TextDefault textColor={colors.headerBackground} H3 bold center>
             {props.drawType.name}
@@ -47,9 +47,6 @@ function MainCard(props: Readonly<DashboardEntry>) {
         </View>
         <View style={styles.boxContainer}>
           <View style={styles.boxInfo}>
-            <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small>
-              {props.game.name}
-            </TextDefault>
             <TextDefault numberOfLines={1} textColor={colors.headerText} H5 bold style={alignment.MTxSmall}>
               {dateTransformation(draw ? draw.date : null, true)}
             </TextDefault>
@@ -59,7 +56,7 @@ function MainCard(props: Readonly<DashboardEntry>) {
                 {" (Europe/London)"}
               </TextDefault>
             </TextDefault>
-            <View style={styles.lotteryBalls}>
+            <View style={styles.ballRow}>
               {draw &&
                 (draw.pending ? (
                   <TextDefault textColor={colors.yellow} H4 bold>

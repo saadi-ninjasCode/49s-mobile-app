@@ -50,7 +50,7 @@ export const useStyles = () => {
           ...alignment.PLxSmall,
           ...alignment.PRxSmall,
         },
-        lotteryBalls: {
+        ballRow: {
           width: '100%',
           backgroundColor: 'transparent',
           flexDirection: 'row',
