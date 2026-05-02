@@ -81,19 +81,19 @@ function Lottery({ drawTypeId }: LotteryProps) {
 
       {!isFiltering && (
         <>
-          <TextDefault textColor={colors.headerBackground} H4 center style={styles.headerStyles}>
+          <TextDefault textColor={colors.lotteryBox} H4 center style={styles.headerStyles}>
             {"Latest Result"}
           </TextDefault>
           <LotteryCard {...latest} />
           <View style={styles.separator} />
-          <TextDefault textColor={colors.headerBackground} H4 center style={styles.headerStyles}>
+          <TextDefault textColor={colors.lotteryBox} H4 center style={styles.headerStyles}>
             {"Previous Results"}
           </TextDefault>
         </>
       )}
 
       {isFiltering && (
-        <TextDefault textColor={colors.headerBackground} H4 center style={styles.headerStyles}>
+        <TextDefault textColor={colors.lotteryBox} H4 center style={styles.headerStyles}>
           {"Result"}
         </TextDefault>
       )}

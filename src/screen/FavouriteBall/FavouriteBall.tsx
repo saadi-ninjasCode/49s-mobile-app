@@ -1,12 +1,12 @@
-import { useTheme } from '@react-navigation/native';
-import React from 'react';
-import { SectionList, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { TextDefault } from '../../components/Text';
-import { favouriteBall } from '../../mock/favouriteBall';
-import type { BallStat } from '../../types';
-import { alignment } from '../../utilities';
-import { useStyles } from './styles';
+import { useTheme } from "@react-navigation/native";
+import React from "react";
+import { SectionList, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TextDefault } from "../../components/Text";
+import { favouriteBall } from "../../mock/favouriteBall";
+import type { BallStat } from "../../types";
+import { alignment } from "../../utilities";
+import { useStyles } from "./styles";
 
 interface BallsProps {
   name: string;
@@ -28,7 +28,7 @@ function Balls({ name, color, array }: BallsProps) {
         <View style={styles.boxInfo}>
           <View style={styles.lotteryBalls}>
             {array.map((objBall, i) => (
-              <View style={{ justifyContent: 'center', alignItems: 'center' }} key={i}>
+              <View style={{ justifyContent: "center", alignItems: "center" }} key={i}>
                 <View style={[styles.ballContainer, { backgroundColor: color }]}>
                   <TextDefault textColor={colors.fontWhite} bold H3 center>
                     {objBall.ball}
@@ -36,7 +36,7 @@ function Balls({ name, color, array }: BallsProps) {
                 </View>
                 <TextDefault textColor={colors.facebook} bold H4>
                   {objBall.times}
-                  {' times'}
+                  {" times"}
                 </TextDefault>
               </View>
             ))}
@@ -62,7 +62,7 @@ function FavouriteBall() {
   }));
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={[styles.flex, styles.mainBackground]}>
+    <SafeAreaView edges={["bottom", "left", "right"]} style={[styles.flex, styles.mainBackground]}>
       <SectionList
         style={{ flexGrow: 1 }}
         contentContainerStyle={alignment.PTmedium}
