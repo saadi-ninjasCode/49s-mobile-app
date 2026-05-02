@@ -15,11 +15,12 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon-foreground.png",
+        "monochromeImage": "./assets/images/icon-monochrome.png",
         "backgroundColor": "#253779"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.bitsolsaad.x49smobileapp"
+      "package": "com.aqeel.uk49sresults"
     },
     "platforms": ["ios", "android"],
     "plugins": [
