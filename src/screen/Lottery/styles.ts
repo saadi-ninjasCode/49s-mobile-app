@@ -1,7 +1,7 @@
 import { useTheme } from '@react-navigation/native';
 import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
-import { alignment } from '../../utilities';
+import { alignment, scale } from '../../utilities';
 
 export const useStyles = () => {
   const { colors } = useTheme() as NavigationTheme;
@@ -16,12 +16,36 @@ export const useStyles = () => {
           ...alignment.PTlarge,
           ...alignment.PBlarge,
         },
-        seperator: { ...alignment.MTmedium },
+        separator: { ...alignment.MTmedium },
         headerStyles: {
-          backgroundColor: colors.headerBackground,
           ...alignment.MBmedium,
-          ...alignment.PTxSmall,
-          ...alignment.PBxSmall,
+        },
+        filterRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: scale(8),
+          ...alignment.PLsmall,
+          ...alignment.PRsmall,
+          ...alignment.PTsmall,
+          ...alignment.PBsmall,
+        },
+        clearButton: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: scale(6),
+          borderWidth: scale(1),
+          borderColor: colors.brandAccent,
+          borderRadius: scale(8),
+          paddingVertical: scale(10),
+          paddingHorizontal: scale(12),
+        },
+        clearButtonPressed: {
+          opacity: 0.6,
+        },
+        emptyState: {
+          ...alignment.PTlarge,
+          ...alignment.PBlarge,
+          alignItems: 'center',
         },
       }),
     [colors],

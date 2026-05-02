@@ -65,15 +65,16 @@ function SideBar(props: DrawerContentComponentProps) {
               <View style={styles.resultContainer}>
                 {dashboardInfo.map((entry) => (
                   <DrawerItems
-                    key={entry.lottery._id}
+                    key={entry.drawType._id}
                     name={'lottery'}
-                    icon={entry.lottery.icon_name}
-                    text={entry.lottery.name}
+                    icon={entry.drawType.icon_name}
+                    text={entry.drawType.name}
                     active={false}
                     onPress={() =>
                       navigateAndClose('lottery', {
-                        lotteryId: entry.lottery._id,
-                        name: entry.lottery.name,
+                        gameId: entry.game._id,
+                        drawTypeId: entry.drawType._id,
+                        name: entry.drawType.name,
                       })
                     }
                   />

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { FlatList, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { dashboardInfo } from '../../mock/dashboard';
-import type { Lottery } from '../../types';
-import NotificationCard from './NotificationCard';
-import { useStyles } from './styles';
+import React, { useState } from "react";
+import { FlatList, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { drawTypes } from "../../mock/drawTypes";
+import type { DrawType } from "../../types";
+import NotificationCard from "./NotificationCard";
+import { useStyles } from "./styles";
 
 type EnabledMap = Record<string, boolean>;
 
@@ -12,19 +12,17 @@ function Notification() {
   const styles = useStyles();
   const [enabled, setEnabled] = useState<EnabledMap>(() => {
     const seed: EnabledMap = {};
-    dashboardInfo.forEach((entry, idx) => {
-      seed[entry.lottery._id] = idx % 2 === 0;
+    drawTypes.forEach((dt, idx) => {
+      seed[dt._id] = idx % 2 === 0;
     });
     return seed;
   });
 
-  const lotteries: Lottery[] = dashboardInfo.map((entry) => entry.lottery);
-
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.flex}>
+    <SafeAreaView edges={["bottom", "left", "right"]} style={styles.flex}>
       <View style={styles.flex}>
-        <FlatList<Lottery>
-          data={lotteries}
+        <FlatList<DrawType>
+          data={drawTypes}
           style={[styles.flex, styles.mainBackground]}
           contentContainerStyle={styles.scrollContent}
           keyExtractor={(item) => item._id}
@@ -32,9 +30,7 @@ function Notification() {
             <NotificationCard
               name={item.name}
               checked={!!enabled[item._id]}
-              onToggle={() =>
-                setEnabled((prev) => ({ ...prev, [item._id]: !prev[item._id] }))
-              }
+              onToggle={() => setEnabled((prev) => ({ ...prev, [item._id]: !prev[item._id] }))}
             />
           )}
         />

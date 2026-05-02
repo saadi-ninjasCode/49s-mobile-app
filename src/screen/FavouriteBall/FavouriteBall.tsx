@@ -55,7 +55,7 @@ interface FavouriteSectionItem {
 function FavouriteBall() {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
-  const sectionData = favouriteBall.lottery.map((item, index) => ({
+  const sectionData = favouriteBall.sections.map((item, index) => ({
     name: item.name,
     data: [{ hotBall: item.hotBall, coldBall: item.coldBall }] as FavouriteSectionItem[],
     index,

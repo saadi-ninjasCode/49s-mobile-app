@@ -20,9 +20,13 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.bitsolsaad.x49smobileapp"
     },
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "plugins": [
       "expo-router",
       [
@@ -44,11 +48,15 @@
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
             "useLegacyPackaging": true,
-            "buildArchs": ["arm64-v8a", "armeabi-v7a"]
+            "buildArchs": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ]
           }
         }
       ],
-      "./plugins/withApkSizeTweaks"
+      "./plugins/withApkSizeTweaks",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

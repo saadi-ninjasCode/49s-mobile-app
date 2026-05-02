@@ -13,7 +13,7 @@ function Main() {
       <FlatList<DashboardEntry>
         data={dashboardInfo}
         showsVerticalScrollIndicator={false}
-        keyExtractor={(item) => item.lottery._id}
+        keyExtractor={(item) => item.drawType._id}
         style={styles.flex}
         ItemSeparatorComponent={() => <View style={styles.seperator} />}
         contentContainerStyle={[styles.mainBackground, styles.mainContainer]}

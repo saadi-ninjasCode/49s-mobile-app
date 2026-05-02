@@ -1,5 +1,6 @@
 import alignment from './alignment';
 import colors from './colors';
+import { isSameDay } from './date';
 import { scale, verticalScale } from './scaling';
 import {
   dateTransformation,
@@ -20,6 +21,7 @@ export {
   favouriteTimeTransformation,
   getTime,
   getZone,
+  isSameDay,
   lotteryBallsTransformation,
   scale,
   textStyles,

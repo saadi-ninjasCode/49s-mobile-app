@@ -1,9 +1,12 @@
 import type { FavouriteBallData } from '../types';
+import { FORTY_NINES_ID } from './games';
 
 export const favouriteBall: FavouriteBallData = {
-  lottery: [
+  sections: [
     {
-      name: 'Lotto',
+      drawTypeId: 'brunchtime',
+      gameId: FORTY_NINES_ID,
+      name: 'Brunchtime',
       hotBall: [
         { ball: 7, times: 24 },
         { ball: 23, times: 22 },
@@ -16,7 +19,9 @@ export const favouriteBall: FavouriteBallData = {
       ],
     },
     {
-      name: 'EuroMillions',
+      drawTypeId: 'lunchtime',
+      gameId: FORTY_NINES_ID,
+      name: 'Lunchtime',
       hotBall: [
         { ball: 4, times: 31 },
         { ball: 17, times: 28 },
@@ -29,7 +34,9 @@ export const favouriteBall: FavouriteBallData = {
       ],
     },
     {
-      name: 'Thunderball',
+      drawTypeId: 'drivetime',
+      gameId: FORTY_NINES_ID,
+      name: 'Drivetime',
       hotBall: [
         { ball: 9, times: 18 },
         { ball: 16, times: 16 },
@@ -39,6 +46,21 @@ export const favouriteBall: FavouriteBallData = {
         { ball: 2, times: 3 },
         { ball: 21, times: 4 },
         { ball: 39, times: 4 },
+      ],
+    },
+    {
+      drawTypeId: 'teatime',
+      gameId: FORTY_NINES_ID,
+      name: 'Teatime',
+      hotBall: [
+        { ball: 11, times: 26 },
+        { ball: 25, times: 21 },
+        { ball: 44, times: 17 },
+      ],
+      coldBall: [
+        { ball: 5, times: 5 },
+        { ball: 18, times: 6 },
+        { ball: 35, times: 7 },
       ],
     },
   ],

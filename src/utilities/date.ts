@@ -69,3 +69,14 @@ export const dateWithWeekday = (date: DateInput): string => {
 };
 export const dateToZone = (date: DateInput): string => londonTimeFormatter.format(toDate(date));
 export const dateToTime = (date: DateInput): string => timeFormatter.format(toDate(date));
+
+export const isSameDay = (a: DateInput, b: DateInput): boolean => {
+  if (a == null || b == null) return false;
+  const da = toDate(a);
+  const db = toDate(b);
+  return (
+    da.getFullYear() === db.getFullYear() &&
+    da.getMonth() === db.getMonth() &&
+    da.getDate() === db.getDate()
+  );
+};

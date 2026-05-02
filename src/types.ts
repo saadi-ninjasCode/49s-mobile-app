@@ -1,5 +1,16 @@
-export interface Lottery {
+export interface Game {
   _id: string;
+  name: string;
+  icon_name: string;
+  mainBallCount: number;
+  mainBallMax: number;
+  specialBallCount: number;
+  specialBallMax: number;
+}
+
+export interface DrawType {
+  _id: string;
+  gameId: string;
   name: string;
   icon_name: string;
   next_draw: number;
@@ -7,6 +18,8 @@ export interface Lottery {
 
 export interface Draw {
   _id: string;
+  gameId: string;
+  drawTypeId: string;
   date: number;
   balls: number[];
   specialBalls: number[];
@@ -14,8 +27,14 @@ export interface Draw {
 }
 
 export interface DashboardEntry {
-  lottery: Lottery;
-  draw: Draw;
+  game: Game;
+  drawType: DrawType;
+  latestDraw: Draw | null;
+}
+
+export interface DrawWithContext extends Draw {
+  game: Game;
+  drawType: DrawType;
 }
 
 export interface BallStat {
@@ -23,18 +42,16 @@ export interface BallStat {
   times: number;
 }
 
-export interface FavouriteLotterySection {
+export interface FavouriteDrawTypeSection {
+  drawTypeId: string;
+  gameId: string;
   name: string;
   hotBall: BallStat[];
   coldBall: BallStat[];
 }
 
 export interface FavouriteBallData {
-  lottery: FavouriteLotterySection[];
-}
-
-export interface LotteryDraw extends Draw {
-  lottery: Lottery;
+  sections: FavouriteDrawTypeSection[];
 }
 
 export interface TimeLeft {
