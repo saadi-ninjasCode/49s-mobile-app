@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MainCard from '../../components/MainCard/MainCard';
-import { dashboardInfo } from '../../mock/dashboard';
+import { subscribeDashboard } from '../../services/firestore';
 import type { DashboardEntry } from '../../types';
 import { useStyles } from './styles';
 
 function Main() {
   const styles = useStyles();
+  const [dashboardInfo, setDashboardInfo] = useState<DashboardEntry[]>([]);
+
+  useEffect(() => subscribeDashboard(setDashboardInfo), []);
+
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.flex}>
       <FlatList<DashboardEntry>

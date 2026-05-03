@@ -43,9 +43,8 @@ export const useStyles = () => {
           opacity: 0.6,
         },
         emptyState: {
-          ...alignment.PTlarge,
-          ...alignment.PBlarge,
-          alignItems: 'center',
+          flex: 1,
+          justifyContent: 'center',
         },
       }),
     [colors],

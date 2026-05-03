@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCTqbxmtel1ZzYkvkie7wDz6m5ytUIQmo8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>342058572606</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.sameet.uk49sresults</string>
+	<key>PROJECT_ID</key>
+	<string>my-49s-result-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>my-49s-result-app.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:342058572606:ios:16cf639941b111d1be2a6f</string>
+</dict>
+</plist>

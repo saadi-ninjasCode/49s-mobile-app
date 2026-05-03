@@ -2,7 +2,7 @@ import { useTheme } from "@react-navigation/native";
 import React from "react";
 import { View } from "react-native";
 import type { DrawWithContext } from "../../types";
-import { dateTransformation, getZone } from "../../utilities";
+import { dateTransformation } from "../../utilities";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
 
@@ -14,9 +14,6 @@ function DrawCard(props: Readonly<DrawWithContext>) {
       <View style={styles.boxContainer}>
         <TextDefault numberOfLines={1} textColor={colors.headerText} H5 bold>
           {dateTransformation(props.date ?? null, true)}
-        </TextDefault>
-        <TextDefault small numberOfLines={1} textColor={colors.fontSecondColor}>
-          {getZone(props.date ?? null)}
         </TextDefault>
         <View style={styles.ballRow}>
           {props.pending ? (

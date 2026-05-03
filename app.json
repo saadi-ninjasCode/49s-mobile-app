@@ -10,7 +10,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sameet.uk49sresults",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +22,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.sameet.uk49sresults"
+      "package": "com.sameet.uk49sresults",
+      "googleServicesFile": "./google-services.json"
     },
     "platforms": ["ios", "android"],
     "plugins": [
@@ -48,9 +51,16 @@
           }
         }
       ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      // "./plugins/withFirebaseStaticPodfile",
       [
         "expo-build-properties",
         {
+          "ios": {
+            "useFrameworks": "static",
+            "forceStaticLinking": ["RNFBApp", "RNFBFirestore", "RNFBMessaging"]
+          },
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,

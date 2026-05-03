@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "342058572606",
+    "project_id": "my-49s-result-app",
+    "storage_bucket": "my-49s-result-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:342058572606:android:d535022d4ae3c960be2a6f",
+        "android_client_info": {
+          "package_name": "com.sameet.uk49sresults"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6pSt-7w6_A2sPZvLowrYF0sLIc4Uz89A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

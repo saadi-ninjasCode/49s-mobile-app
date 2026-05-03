@@ -1,14 +1,14 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { FlatList, ListRenderItem, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DatePickerField from "../../components/DatePickerField/DatePickerField";
 import DrawCard from "../../components/DrawCard/DrawCard";
 import { TextDefault, TextError } from "../../components/Text";
-import { getDrawsForDrawType } from "../../mock/draws";
+import { subscribeDrawsForDrawType } from "../../services/firestore";
 import type { DrawWithContext } from "../../types";
-import { isSameDay, scale } from "../../utilities";
+import { scale } from "../../utilities";
 import { useStyles } from "./styles";
 
 export interface DrawProps {
@@ -22,39 +22,43 @@ function Draw({ drawTypeId }: DrawProps) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [allDraws, setAllDraws] = useState<DrawWithContext[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setSelectedDate(null);
   }, [drawTypeId]);
 
-  const allDraws = useMemo(() => getDrawsForDrawType(drawTypeId), [drawTypeId]);
+  useEffect(() => {
+    if (!drawTypeId) {
+      setAllDraws([]);
+      setLoading(false);
+      return;
+    }
+    setAllDraws([]);
+    setLoading(true);
+    return subscribeDrawsForDrawType(
+      drawTypeId,
+      (draws) => {
+        setAllDraws(draws);
+        setLoading(false);
+      },
+      { date: selectedDate },
+    );
+  }, [drawTypeId, selectedDate]);
 
   const handleClear = useCallback(() => setSelectedDate(null), []);
 
-  if (!allDraws.length) {
+  const isFiltering = selectedDate !== null;
+
+  if (!loading && !isFiltering && allDraws.length === 0) {
     return <TextError text={"Data is not available now."} textColor={colors.brandAccent} />;
   }
 
-  const latest: DrawWithContext = allDraws[0];
-  const defaultPrevious: DrawWithContext[] = allDraws.slice(1, DEFAULT_LIMIT + 1);
-  const isFiltering = selectedDate !== null;
+  // const latest: DrawWithContext | null = isFiltering ? null : (allDraws[0] ?? null);
+  const defaultPrevious: DrawWithContext[] = isFiltering ? [] : allDraws.slice(1, DEFAULT_LIMIT + 1);
 
-  let filteredDraw: DrawWithContext | null = null;
-  if (selectedDate) {
-    filteredDraw = allDraws.find((d) => isSameDay(d.date, selectedDate)) ?? null;
-  }
-
-  let data: DrawWithContext[];
-  if (!isFiltering) {
-    data = defaultPrevious;
-  } else if (filteredDraw) {
-    data = [filteredDraw];
-  } else {
-    data = [];
-  }
-
-  const oldestDate = new Date(allDraws.at(-1)!.date);
-  const newestDate = new Date(allDraws[0].date);
+  const data: DrawWithContext[] = isFiltering ? allDraws : defaultPrevious;
 
   const renderHeader = () => (
     <>
@@ -63,8 +67,7 @@ function Draw({ drawTypeId }: DrawProps) {
           value={selectedDate}
           onSelect={setSelectedDate}
           placeholder="Filter by date"
-          minimumDate={oldestDate}
-          maximumDate={newestDate}
+          maximumDate={new Date()}
         />
         {isFiltering && (
           <Pressable
@@ -79,7 +82,7 @@ function Draw({ drawTypeId }: DrawProps) {
         )}
       </View>
 
-      {!isFiltering && (
+      {/* {!isFiltering && latest && (
         <>
           <TextDefault textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
             {"Latest Result"}
@@ -92,27 +95,67 @@ function Draw({ drawTypeId }: DrawProps) {
         </>
       )}
 
-      {isFiltering && (
+      {isFiltering && data.length > 0 && (
         <TextDefault textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
           {"Result"}
         </TextDefault>
-      )}
+      )} */}
     </>
   );
 
-  const renderEmpty = () =>
-    isFiltering ? (
+  const renderEmpty = () => {
+    if (loading) {
+      return (
+        <View style={styles.emptyState}>
+          <TextDefault textColor={colors.fontMainColor} H4 bold center>
+            {"Loading…"}
+          </TextDefault>
+        </View>
+      );
+    }
+    return (
       <View style={styles.emptyState}>
         <TextDefault textColor={colors.fontMainColor} H4 bold center>
-          {"No draw found for the selected date"}
+          {"No draw result found"}
         </TextDefault>
       </View>
-    ) : null;
+    );
+  };
+
+  const renderList: ListRenderItem<DrawWithContext> = ({ item, index }) => {
+    let renderArray = [];
+    if (index === 0 && allDraws.length === 1) {
+      renderArray.push(
+        <TextDefault key={"title"} textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
+          {"Results"}
+        </TextDefault>,
+      );
+    } else if (index === 0 && allDraws.length > 1) {
+      renderArray.push(
+        <TextDefault key={"latest_title"} textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
+          {"Latest Result"}
+        </TextDefault>,
+      );
+    } else if (index === 1 && allDraws.length > 2) {
+      renderArray.push(
+        <TextDefault key={"prev_title"} textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
+          {"Previous Results"}
+        </TextDefault>,
+      );
+    }
+
+    return (
+      <>
+        {renderArray}
+        <DrawCard {...item} />
+      </>
+    );
+  };
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.flex}>
       <FlatList<DrawWithContext>
-        data={data}
+        data={allDraws}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => item._id}
         style={styles.flex}
@@ -120,7 +163,7 @@ function Draw({ drawTypeId }: DrawProps) {
         ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={[styles.mainBackground, styles.mainContainer]}
-        renderItem={({ item }) => <DrawCard {...item} />}
+        renderItem={renderList}
       />
     </SafeAreaView>
   );
