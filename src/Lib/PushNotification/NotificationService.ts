@@ -1,11 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 
+import * as Fcm from "./FcmService";
 import * as Notifee from "./NotifeeService";
 import {
   CHANNELS,
   CHANNEL_GROUPS,
-  ChannelDef,
   STORAGE_KEYS,
   findChannelByDrawType,
 } from "./notificationConstant";
@@ -65,6 +65,20 @@ const ensureChannels = async (): Promise<void> => {
   for (const channel of CHANNELS) await Notifee.createChannel(channel);
 };
 
+const syncTopicsToPrefs = async (): Promise<void> => {
+  for (const channel of CHANNELS) {
+    const enabled = enabledMap[channel.drawTypeId] === true;
+    try {
+      if (enabled) await Fcm.subscribe(channel.drawTypeId);
+      else await Fcm.unsubscribe(channel.drawTypeId);
+    } catch {
+      /* network or token transient — next bootstrap reconciles */
+    }
+  }
+};
+
+let detachForeground: (() => void) | null = null;
+
 export const bootstrap = async (): Promise<void> => {
   const { map, firstRun } = await hydratePrefs();
   enabledMap = map;
@@ -83,10 +97,14 @@ export const bootstrap = async (): Promise<void> => {
 
   await ensureChannels();
 
-  if (firstRun) {
-    persistPrefs(enabledMap);
-    // FCM topic subscription for all drawTypes goes here in Part 2.
-  }
+  const iosReady = await Fcm.ensureIOSPermission();
+  if (!iosReady) return;
+
+  if (firstRun) persistPrefs(enabledMap);
+
+  await syncTopicsToPrefs();
+
+  if (!detachForeground) detachForeground = Fcm.attachForegroundListener();
 };
 
 const findBlockedGroup = async (): Promise<string | null> => {
@@ -186,7 +204,12 @@ export const setDrawTypeEnabled = async (
   enabledMap = { ...enabledMap, [drawTypeId]: enabled };
   persistPrefs(enabledMap);
   notify();
-  // FCM topic subscribe/unsubscribe goes here in Part 2.
+  try {
+    if (enabled) await Fcm.subscribe(drawTypeId);
+    else await Fcm.unsubscribe(drawTypeId);
+  } catch {
+    /* local pref is the source of truth; bootstrap reconciles */
+  }
 };
 
 export const subscribe = (listener: Listener): (() => void) => {

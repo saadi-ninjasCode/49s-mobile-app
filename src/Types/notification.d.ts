@@ -13,6 +13,7 @@ interface DisplayPayload {
 interface ChannelGroupDef {
     id: string;
     name: string;
+    lotterySlug: string;
 }
 
 interface ChannelDef {

@@ -5,8 +5,6 @@ import notifee, {
 import { Platform } from "react-native";
 
 import {
-  ChannelDef,
-  ChannelGroupDef,
   NOTIFICATION_COLOR,
   NOTIFICATION_SMALL_ICON,
 } from "./notificationConstant";
