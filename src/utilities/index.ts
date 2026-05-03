@@ -1,6 +1,6 @@
 import alignment from './alignment';
 import colors from './colors';
-import { formatLocalDrawTime, getLocalTimeZoneAbbr, isSameDay, nextDrawTimestamp, todaysDrawTimestamp } from './date';
+import { formatLocalDrawTime, getLocalTimeZone, getLocalTimeZoneAbbr, isSameDay, nextDrawTimestamp, todaysDrawTimestamp } from './date';
 import { scale, verticalScale } from './scaling';
 import {
   dateTransformation,
@@ -20,6 +20,7 @@ export {
   favouriteBallTransformation,
   favouriteTimeTransformation,
   formatLocalDrawTime,
+  getLocalTimeZone,
   getLocalTimeZoneAbbr,
   getTime,
   getZone,

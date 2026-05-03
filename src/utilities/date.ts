@@ -184,6 +184,9 @@ export const getLocalTimeZoneAbbr = (): string => {
   return partValue(parts, 'timeZoneName');
 };
 
+export const getLocalTimeZone = (): string =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 export const isSameDay = (a: DateInput, b: DateInput): boolean => {
   if (a == null || b == null) return false;
   const da = toDate(a);

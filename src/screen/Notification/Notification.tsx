@@ -1,6 +1,6 @@
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, View } from "react-native";
+import { AppState, FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNotificationPrefs } from "../../Lib/PushNotification/NotificationProvider";
 import * as NotificationService from "../../Lib/PushNotification/NotificationService";
@@ -12,11 +12,32 @@ function Notification() {
   const styles = useStyles();
   const { enabled, toggle } = useNotificationPrefs();
   const [drawTypes, setDrawTypes] = useState<DrawType[]>([]);
-
   useFocusEffect(
     useCallback(() => {
       NotificationService.ensurePermissionOrPromptSettings().catch(() => {});
     }, []),
+  );
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        NotificationService.ensurePermissionOrPromptSettings().catch(() => {});
+      }
+    });
+    return () => subscription.remove();
+  }, []);
+
+  const handleToggle = useCallback(
+    async (drawTypeId: string) => {
+      const turningOff = !!enabled[drawTypeId];
+      if (turningOff) {
+        toggle(drawTypeId);
+        return;
+      }
+      const ok = await NotificationService.ensurePermissionOrPromptSettings(drawTypeId);
+      if (ok) toggle(drawTypeId);
+    },
+    [enabled, toggle],
   );
 
   useEffect(() => {
@@ -38,7 +59,7 @@ function Notification() {
           contentContainerStyle={styles.scrollContent}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <NotificationCard name={item.name} checked={!!enabled[item._id]} onToggle={() => toggle(item._id)} />
+            <NotificationCard name={item.name} checked={!!enabled[item._id]} onToggle={() => handleToggle(item._id)} />
           )}
         />
       </View>
