@@ -2,10 +2,12 @@ import type { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { ThemeProvider } from "@react-navigation/native";
 import { Drawer } from "expo-router/drawer";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import SideBar from "../src/components/SideBar/SideBar";
+import { NotificationPrefsProvider } from "../src/Lib/PushNotification/NotificationProvider";
+import * as NotificationService from "../src/Lib/PushNotification/NotificationService";
 import { THEME, ThemeModeProvider, useThemeMode } from "../src/theme/theme";
 
 const renderDrawerContent = (props: DrawerContentComponentProps) => <SideBar {...props} />;
@@ -21,6 +23,7 @@ function ThemedDrawer() {
         screenOptions={{
           headerStyle: { backgroundColor: theme.colors.headerBackground },
           headerTintColor: theme.colors.headerText,
+          headerTitleAlign: "center",
           headerTitleStyle: { fontWeight: "bold", color: theme.colors.headerText },
           drawerStyle: { backgroundColor: theme.colors.drawerColor, width: 280 },
           drawerActiveTintColor: theme.colors.fontWhite,
@@ -42,10 +45,16 @@ function ThemedDrawer() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    NotificationService.bootstrap().catch(() => {});
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeModeProvider>
-        <ThemedDrawer />
+        <NotificationPrefsProvider>
+          <ThemedDrawer />
+        </NotificationPrefsProvider>
       </ThemeModeProvider>
     </GestureHandlerRootView>
   );
