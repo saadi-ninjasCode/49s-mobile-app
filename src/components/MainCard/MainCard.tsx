@@ -3,7 +3,6 @@ import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useMemo } from "react";
 import { Pressable, View, type PressableStateCallbackType } from "react-native";
-import type { DashboardEntry } from "../../types";
 import { alignment, dateTransformation, formatLocalDrawTime, getLocalTimeZoneAbbr, scale } from "../../utilities";
 import Counter from "../Counter/Counter";
 import { TextDefault } from "../Text";

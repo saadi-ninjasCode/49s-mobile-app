@@ -1,22 +1,33 @@
-import React, { useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { drawTypes } from "../../mock/drawTypes";
-import type { DrawType } from "../../types";
+import { useNotificationPrefs } from "../../Lib/PushNotification/NotificationProvider";
+import * as NotificationService from "../../Lib/PushNotification/NotificationService";
+import { fetchDrawTypes } from "../../services/firestore";
 import NotificationCard from "./NotificationCard";
 import { useStyles } from "./styles";
 
-type EnabledMap = Record<string, boolean>;
-
 function Notification() {
   const styles = useStyles();
-  const [enabled, setEnabled] = useState<EnabledMap>(() => {
-    const seed: EnabledMap = {};
-    drawTypes.forEach((dt, idx) => {
-      seed[dt._id] = idx % 2 === 0;
+  const { enabled, toggle } = useNotificationPrefs();
+  const [drawTypes, setDrawTypes] = useState<DrawType[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      NotificationService.ensurePermissionOrPromptSettings().catch(() => {});
+    }, []),
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchDrawTypes().then((items) => {
+      if (!cancelled) setDrawTypes(items);
     });
-    return seed;
-  });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.flex}>
@@ -27,11 +38,7 @@ function Notification() {
           contentContainerStyle={styles.scrollContent}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <NotificationCard
-              name={item.name}
-              checked={!!enabled[item._id]}
-              onToggle={() => setEnabled((prev) => ({ ...prev, [item._id]: !prev[item._id] }))}
-            />
+            <NotificationCard name={item.name} checked={!!enabled[item._id]} onToggle={() => toggle(item._id)} />
           )}
         />
       </View>

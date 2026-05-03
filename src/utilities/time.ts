@@ -1,5 +1,3 @@
-import type { TimeLeft } from '../types';
-
 export function timeDifference(date: number | Date | null | undefined): TimeLeft | null {
   if (!date) return null;
   const target = typeof date === 'number' ? date : date.getTime();

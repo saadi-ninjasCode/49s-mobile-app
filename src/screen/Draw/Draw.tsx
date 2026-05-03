@@ -7,7 +7,6 @@ import DatePickerField from "../../components/DatePickerField/DatePickerField";
 import DrawCard from "../../components/DrawCard/DrawCard";
 import { TextDefault, TextError } from "../../components/Text";
 import { subscribeDrawsForDrawType } from "../../services/firestore";
-import type { DrawWithContext } from "../../types";
 import { scale } from "../../utilities";
 import { useStyles } from "./styles";
 

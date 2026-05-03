@@ -13,14 +13,6 @@ import {
   where,
 } from "@react-native-firebase/firestore";
 
-import type {
-  DashboardEntry,
-  Draw,
-  DrawType,
-  DrawWithContext,
-  Game,
-} from "../types";
-
 type Unsubscribe = () => void;
 
 interface DrawTypeDoc {

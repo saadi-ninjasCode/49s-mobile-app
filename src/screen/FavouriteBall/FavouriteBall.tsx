@@ -4,7 +4,6 @@ import { SectionList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextDefault } from "../../components/Text";
 import { favouriteBall } from "../../mock/favouriteBall";
-import type { BallStat } from "../../types";
 import { alignment } from "../../utilities";
 import { useStyles } from "./styles";
 

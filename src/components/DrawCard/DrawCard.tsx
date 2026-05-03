@@ -1,7 +1,6 @@
 import { useTheme } from "@react-navigation/native";
 import React from "react";
 import { View } from "react-native";
-import type { DrawWithContext } from "../../types";
 import { dateTransformation } from "../../utilities";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";

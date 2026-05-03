@@ -1,4 +1,3 @@
-import type { BallStat } from '../types';
 import { dateToCustom, dateToTime, dateToZone, dateWithWeekday } from './date';
 
 export const ballsTransformation = (balls: number[], pending: boolean): string => {

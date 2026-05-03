@@ -1,4 +1,4 @@
-export interface Game {
+interface Game {
   _id: string;
   name: string;
   icon_name: string;
@@ -8,7 +8,7 @@ export interface Game {
   specialBallMax: number;
 }
 
-export interface DrawType {
+interface DrawType {
   _id: string;
   gameId: string;
   name: string;
@@ -18,7 +18,7 @@ export interface DrawType {
   timeZone: string;
 }
 
-export interface Draw {
+interface Draw {
   _id: string;
   gameId: string;
   drawTypeId: string;
@@ -28,23 +28,23 @@ export interface Draw {
   pending: boolean;
 }
 
-export interface DashboardEntry {
+interface DashboardEntry {
   game: Game;
   drawType: DrawType;
   latestDraw: Draw | null;
 }
 
-export interface DrawWithContext extends Draw {
+interface DrawWithContext extends Draw {
   game: Game;
   drawType: DrawType;
 }
 
-export interface BallStat {
+interface BallStat {
   ball: number;
   times: number;
 }
 
-export interface FavouriteDrawTypeSection {
+interface FavouriteDrawTypeSection {
   drawTypeId: string;
   gameId: string;
   name: string;
@@ -52,11 +52,11 @@ export interface FavouriteDrawTypeSection {
   coldBall: BallStat[];
 }
 
-export interface FavouriteBallData {
+interface FavouriteBallData {
   sections: FavouriteDrawTypeSection[];
 }
 
-export interface TimeLeft {
+interface TimeLeft {
   days: number;
   hours: number;
   minutes: number;
