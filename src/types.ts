@@ -13,7 +13,9 @@ export interface DrawType {
   gameId: string;
   name: string;
   icon_name: string;
-  next_draw: number;
+  hour: number;
+  minute: number;
+  timeZone: string;
 }
 
 export interface Draw {

@@ -70,6 +70,120 @@ export const dateWithWeekday = (date: DateInput): string => {
 export const dateToZone = (date: DateInput): string => londonTimeFormatter.format(toDate(date));
 export const dateToTime = (date: DateInput): string => timeFormatter.format(toDate(date));
 
+const tzOffsetParts = (timeZone: string) =>
+  new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  });
+
+const wallClockToUtc = (
+  y: number,
+  m: number,
+  d: number,
+  h: number,
+  min: number,
+  timeZone: string,
+): number => {
+  const utcGuess = Date.UTC(y, m - 1, d, h, min, 0);
+  const parts = tzOffsetParts(timeZone)
+    .formatToParts(new Date(utcGuess))
+    .reduce<Record<string, string>>((acc, p) => {
+      acc[p.type] = p.value;
+      return acc;
+    }, {});
+  const tzAsUtc = Date.UTC(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour),
+    Number(parts.minute),
+    Number(parts.second),
+  );
+  if (!Number.isFinite(tzAsUtc)) return Number.NaN;
+  const offset = tzAsUtc - utcGuess;
+  return utcGuess - offset;
+};
+
+const tzDateParts = (timeZone: string, ref: Date = new Date()) => {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+    .formatToParts(ref)
+    .reduce<Record<string, string>>((acc, p) => {
+      acc[p.type] = p.value;
+      return acc;
+    }, {});
+  return {
+    y: Number(parts.year),
+    m: Number(parts.month),
+    d: Number(parts.day),
+  };
+};
+
+export const todaysDrawTimestamp = (
+  hour: number,
+  minute: number,
+  timeZone: string,
+): number => {
+  if (!Number.isFinite(hour) || !Number.isFinite(minute) || !timeZone) return Number.NaN;
+  const { y, m, d } = tzDateParts(timeZone);
+  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return Number.NaN;
+  return wallClockToUtc(y, m, d, hour, minute, timeZone);
+};
+
+export const nextDrawTimestamp = (
+  hour: number,
+  minute: number,
+  timeZone: string,
+): number => {
+  const today = todaysDrawTimestamp(hour, minute, timeZone);
+  if (!Number.isFinite(today)) return Number.NaN;
+  if (today > Date.now()) return today;
+  const { y, m, d } = tzDateParts(timeZone);
+  const tomorrow = new Date(Date.UTC(y, m - 1, d + 1));
+  return wallClockToUtc(
+    tomorrow.getUTCFullYear(),
+    tomorrow.getUTCMonth() + 1,
+    tomorrow.getUTCDate(),
+    hour,
+    minute,
+    timeZone,
+  );
+};
+
+export const formatLocalDrawTime = (
+  hour: number,
+  minute: number,
+  scheduleTimeZone: string,
+  displayTimeZone?: string,
+): string => {
+  const ts = nextDrawTimestamp(hour, minute, scheduleTimeZone);
+  if (!Number.isFinite(ts)) return '—';
+  const opts: Intl.DateTimeFormatOptions = {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  };
+  if (displayTimeZone) opts.timeZone = displayTimeZone;
+  return new Intl.DateTimeFormat(undefined, opts).format(new Date(ts));
+};
+
+export const getLocalTimeZoneAbbr = (): string => {
+  const parts = new Intl.DateTimeFormat(undefined, {
+    timeZoneName: 'short',
+  }).formatToParts(new Date());
+  return partValue(parts, 'timeZoneName');
+};
+
 export const isSameDay = (a: DateInput, b: DateInput): boolean => {
   if (a == null || b == null) return false;
   const da = toDate(a);

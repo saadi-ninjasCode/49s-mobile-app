@@ -29,6 +29,7 @@ interface DrawTypeDoc {
   icon_name: string;
   hour?: number;
   minute?: number;
+  timeZone?: string;
 }
 
 interface DrawDoc {
@@ -42,21 +43,14 @@ interface DrawDoc {
 
 const db = () => getFirestore(getApp());
 
-const computeNextDraw = (hour?: number, minute?: number): number => {
-  if (hour === undefined || minute === undefined) return 0;
-  const now = new Date();
-  const next = new Date();
-  next.setHours(hour, minute, 0, 0);
-  if (next.getTime() <= now.getTime()) next.setDate(next.getDate() + 1);
-  return next.getTime();
-};
-
 const drawTypeFromDoc = (id: string, data: DrawTypeDoc): DrawType => ({
   _id: id,
   gameId: data.gameId,
   name: data.name,
   icon_name: data.icon_name,
-  next_draw: computeNextDraw(data.hour, data.minute),
+  hour: data.hour ?? 0,
+  minute: data.minute ?? 0,
+  timeZone: data.timeZone ?? 'Europe/London',
 });
 
 const drawFromDoc = (id: string, data: DrawDoc): Draw => ({
@@ -192,6 +186,7 @@ export const subscribeDrawsForDrawType = (
           where("drawTypeId", "==", drawTypeId),
           where("date", ">=", Timestamp.fromDate(start)),
           where("date", "<", Timestamp.fromDate(end)),
+          orderBy("date", "desc"),
           limit(1),
         );
       } else {
@@ -214,12 +209,12 @@ export const subscribeDrawsForDrawType = (
           cb(draws);
         },
         (error) => {
-          console.warn("subscribeDrawsForDrawType onSnapshot error:", error);
+          console.error("subscribeDrawsForDrawType onSnapshot error:", error);
           cb([]);
         },
       );
     } catch (error) {
-      console.warn("subscribeDrawsForDrawType setup error:", error);
+      console.error("subscribeDrawsForDrawType setup error:", error);
       if (!cancelled) cb([]);
     }
   })();

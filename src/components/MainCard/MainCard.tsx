@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useMemo } from "react";
 import { Pressable, View, type PressableStateCallbackType } from "react-native";
 import type { DashboardEntry } from "../../types";
-import { alignment, dateTransformation, getTime, scale } from "../../utilities";
+import { alignment, dateTransformation, formatLocalDrawTime, getLocalTimeZoneAbbr, scale } from "../../utilities";
 import Counter from "../Counter/Counter";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
@@ -51,10 +51,13 @@ function MainCard(props: Readonly<DashboardEntry>) {
               {dateTransformation(draw ? draw.date : null, true)}
             </TextDefault>
             <TextDefault numberOfLines={1} textColor={colors.headerText} style={alignment.MTxSmall}>
-              {getTime(draw ? draw.date : null)}
+              {`Next draw: ${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone)}`}
               <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small>
-                {" (Europe/London)"}
+                {` (${getLocalTimeZoneAbbr()})`}
               </TextDefault>
+            </TextDefault>
+            <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
+              {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone, props.drawType.timeZone)} (${props.drawType.timeZone})`}
             </TextDefault>
             <View style={styles.ballRow}>
               {draw &&
@@ -89,7 +92,12 @@ function MainCard(props: Readonly<DashboardEntry>) {
             <FontAwesome5 name="chevron-right" size={scale(12)} color={colors.yellow} />
           </Pressable>
         </View>
-        <Counter time={props.drawType.next_draw} />
+        <Counter
+          hour={props.drawType.hour}
+          minute={props.drawType.minute}
+          timeZone={props.drawType.timeZone}
+          latestDrawDate={props.latestDraw?.date ?? null}
+        />
       </View>
     </View>
   );
