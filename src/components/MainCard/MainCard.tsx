@@ -49,11 +49,8 @@ function MainCard(props: Readonly<DashboardEntry>) {
             <TextDefault numberOfLines={1} textColor={colors.headerText} H5 bold style={alignment.MTxSmall}>
               {dateTransformation(draw ? draw.date : null, true)}
             </TextDefault>
-            <TextDefault numberOfLines={1} textColor={colors.headerText} style={alignment.MTxSmall}>
-              {`Next draw: ${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone)}`}
-              <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small>
-                {` (${getLocalTimeZoneAbbr()})`}
-              </TextDefault>
+            <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} style={alignment.MTxSmall}>
+              {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone)} (${getLocalTimeZoneAbbr()})`}
             </TextDefault>
             <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
               {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone, props.drawType.timeZone)} (${props.drawType.timeZone})`}
