@@ -3,7 +3,7 @@ import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useMemo } from "react";
 import { Pressable, View, type PressableStateCallbackType } from "react-native";
-import { alignment, dateTransformation, formatLocalDrawTime, getLocalTimeZoneAbbr, scale } from "../../utilities";
+import { alignment, dateTransformation, formatLocalDrawTime, getLocalTimeZone, scale } from "../../utilities";
 import Counter from "../Counter/Counter";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
@@ -50,7 +50,7 @@ function MainCard(props: Readonly<DashboardEntry>) {
               {dateTransformation(draw ? draw.date : null, true)}
             </TextDefault>
             <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} style={alignment.MTxSmall}>
-              {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone)} (${getLocalTimeZoneAbbr()})`}
+              {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone)} (${getLocalTimeZone()})`}
             </TextDefault>
             <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
               {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone, props.drawType.timeZone)} (${props.drawType.timeZone})`}

@@ -2,8 +2,11 @@ const { withAndroidManifest, withDangerousMod } = require('expo/config-plugins')
 const fs = require('fs');
 const path = require('path');
 
-const SOURCE = path.join('assets', 'images', 'notification-icon.png');
-const DENSITIES = [
+const SOURCE = path.join('assets', 'images', 'notification-icon.xml');
+const META_ICON_NAME = 'com.google.firebase.messaging.default_notification_icon';
+const ICON_RESOURCE = '@drawable/ic_notification';
+
+const STALE_PNG_BUCKETS = [
   'drawable',
   'drawable-mdpi',
   'drawable-hdpi',
@@ -11,13 +14,11 @@ const DENSITIES = [
   'drawable-xxhdpi',
   'drawable-xxxhdpi',
 ];
-const META_ICON_NAME = 'com.google.firebase.messaging.default_notification_icon';
-const ICON_RESOURCE = '@drawable/ic_notification';
 
-const withCopyIcon = (config) =>
+const withCopyIcon = config =>
   withDangerousMod(config, [
     'android',
-    async (cfg) => {
+    async cfg => {
       const projectRoot = cfg.modRequest.projectRoot;
       const platformRoot = cfg.modRequest.platformProjectRoot;
       const src = path.join(projectRoot, SOURCE);
@@ -26,19 +27,16 @@ const withCopyIcon = (config) =>
         throw new Error(`withNotificationIcon: source not found at ${src}`);
       }
 
-      for (const density of DENSITIES) {
-        const dest = path.join(
-          platformRoot,
-          'app',
-          'src',
-          'main',
-          'res',
-          density,
-          'ic_notification.png',
-        );
-        fs.mkdirSync(path.dirname(dest), { recursive: true });
-        fs.copyFileSync(src, dest);
+      const resRoot = path.join(platformRoot, 'app', 'src', 'main', 'res');
+
+      for (const bucket of STALE_PNG_BUCKETS) {
+        const stale = path.join(resRoot, bucket, 'ic_notification.png');
+        if (fs.existsSync(stale)) fs.rmSync(stale);
       }
+
+      const dest = path.join(resRoot, 'drawable', 'ic_notification.xml');
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.copyFileSync(src, dest);
       return cfg;
     },
   ]);
