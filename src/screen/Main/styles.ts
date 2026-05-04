@@ -22,6 +22,16 @@ export const useStyles = () => {
           ...alignment.MTsmall,
           ...alignment.MBsmall,
         },
+        center: {
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        emptyState: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          ...alignment.PTlarge,
+        },
       }),
     [colors],
   );

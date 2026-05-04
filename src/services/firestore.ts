@@ -9,6 +9,8 @@ import {
   onSnapshot,
   orderBy,
   query,
+  type QueryDocumentSnapshot,
+  startAfter,
   Timestamp,
   where,
 } from "@react-native-firebase/firestore";
@@ -72,24 +74,18 @@ export const fetchDrawTypes = async (): Promise<DrawType[]> => {
   return drawTypesCache;
 };
 
-export const getLatestDrawForType = async (drawTypeId: string): Promise<Draw | null> => {
-  const q = query(
-    collection(db(), "draws"),
-    where("drawTypeId", "==", drawTypeId),
-    orderBy("date", "desc"),
-    limit(1),
-  );
-  const snap = await getDocs(q);
-  if (snap.empty) return null;
-  const d = snap.docs[0];
-  return drawFromDoc(d.id, d.data() as DrawDoc);
-};
+export type DashboardEvent =
+  | { type: "loading" }
+  | { type: "data"; entries: DashboardEntry[] }
+  | { type: "error"; error: Error };
 
 export const subscribeDashboard = (
-  cb: (entries: DashboardEntry[]) => void,
+  cb: (event: DashboardEvent) => void,
 ): Unsubscribe => {
   let cancelled = false;
-  let drawsUnsub: Unsubscribe | null = null;
+  const unsubs: Unsubscribe[] = [];
+
+  cb({ type: "loading" });
 
   (async () => {
     try {
@@ -97,125 +93,125 @@ export const subscribeDashboard = (
       if (cancelled) return;
 
       const gamesById = new Map(games.map((g) => [g._id, g]));
-      const emptyEntries = (): DashboardEntry[] =>
-        drawTypes.map((dt) => ({
+      const latestByDrawType = new Map<string, Draw | null>();
+      const pendingInitial = new Set(drawTypes.map((dt) => dt._id));
+
+      const emit = () => {
+        const entries: DashboardEntry[] = drawTypes.map((dt) => ({
           game: gamesById.get(dt.gameId) ?? ({} as Game),
           drawType: dt,
-          latestDraw: null,
+          latestDraw: latestByDrawType.get(dt._id) ?? null,
         }));
+        cb({ type: "data", entries });
+      };
 
-      const q = query(collection(db(), "draws"), orderBy("date", "desc"));
-      drawsUnsub = onSnapshot(
-        q,
-        (snap) => {
-          const latestByDrawType = new Map<string, Draw>();
-          snap?.forEach((d) => {
-            const draw = drawFromDoc(d.id, d.data() as DrawDoc);
-            if (!latestByDrawType.has(draw.drawTypeId)) {
-              latestByDrawType.set(draw.drawTypeId, draw);
-            }
-          });
-
-          const entries: DashboardEntry[] = drawTypes.map((dt) => ({
-            game: gamesById.get(dt.gameId) ?? ({} as Game),
-            drawType: dt,
-            latestDraw: latestByDrawType.get(dt._id) ?? null,
-          }));
-
-          cb(entries);
-        },
-        (error) => {
-          console.warn("subscribeDashboard onSnapshot error:", error);
-          cb(emptyEntries());
-        },
-      );
-    } catch (error) {
-      console.warn("subscribeDashboard setup error:", error);
-      if (!cancelled) cb([]);
-    }
-  })();
-
-  return () => {
-    cancelled = true;
-    drawsUnsub?.();
-  };
-};
-
-export interface SubscribeDrawsOptions {
-  date?: Date | null;
-  recentLimit?: number;
-}
-
-export const subscribeDrawsForDrawType = (
-  drawTypeId: string,
-  cb: (draws: DrawWithContext[]) => void,
-  options?: SubscribeDrawsOptions,
-): Unsubscribe => {
-  let cancelled = false;
-  let drawsUnsub: Unsubscribe | null = null;
-
-  (async () => {
-    try {
-      const [games, drawTypes] = await Promise.all([fetchGames(), fetchDrawTypes()]);
-      if (cancelled) return;
-
-      const drawType = drawTypes.find((dt) => dt._id === drawTypeId);
-      const game = drawType ? games.find((g) => g._id === drawType.gameId) : undefined;
-      if (!drawType || !game) {
-        cb([]);
+      if (drawTypes.length === 0) {
+        emit();
         return;
       }
 
       const drawsRef = collection(db(), "draws");
-      let q;
-      if (options?.date) {
-        const start = new Date(options.date);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(start);
-        end.setDate(end.getDate() + 1);
-        q = query(
+      drawTypes.forEach((dt) => {
+        const q = query(
           drawsRef,
-          where("drawTypeId", "==", drawTypeId),
-          where("date", ">=", Timestamp.fromDate(start)),
-          where("date", "<", Timestamp.fromDate(end)),
+          where("drawTypeId", "==", dt._id),
           orderBy("date", "desc"),
           limit(1),
         );
-      } else {
-        q = query(
-          drawsRef,
-          where("drawTypeId", "==", drawTypeId),
-          orderBy("date", "desc"),
-          limit(options?.recentLimit ?? 60),
+        const unsub = onSnapshot(
+          q,
+          (snap) => {
+            if (cancelled) return;
+            const docSnap = snap?.docs?.[0];
+            const draw = docSnap ? drawFromDoc(docSnap.id, docSnap.data() as DrawDoc) : null;
+            latestByDrawType.set(dt._id, draw);
+            pendingInitial.delete(dt._id);
+            if (pendingInitial.size === 0) emit();
+          },
+          (error) => {
+            if (cancelled) return;
+            cb({ type: "error", error });
+          },
         );
-      }
-
-      drawsUnsub = onSnapshot(
-        q,
-        (snap) => {
-          const draws: DrawWithContext[] = (snap?.docs ?? []).map((d) => ({
-            ...drawFromDoc(d.id, d.data() as DrawDoc),
-            game,
-            drawType,
-          }));
-          cb(draws);
-        },
-        (error) => {
-          console.error("subscribeDrawsForDrawType onSnapshot error:", error);
-          cb([]);
-        },
-      );
+        unsubs.push(unsub);
+      });
     } catch (error) {
-      console.error("subscribeDrawsForDrawType setup error:", error);
-      if (!cancelled) cb([]);
+      if (!cancelled) cb({ type: "error", error: error as Error });
     }
   })();
 
   return () => {
     cancelled = true;
-    drawsUnsub?.();
+    unsubs.forEach((u) => u());
   };
 };
+
+export interface DrawsPageOptions {
+  pageSize?: number;
+  after?: QueryDocumentSnapshot<DrawDoc> | null;
+  date?: Date | null;
+}
+
+export interface DrawsPage {
+  draws: DrawWithContext[];
+  lastDoc: QueryDocumentSnapshot<DrawDoc> | null;
+  hasMore: boolean;
+}
+
+export const fetchDrawsPage = async (
+  drawTypeId: string,
+  options: DrawsPageOptions = {},
+): Promise<DrawsPage> => {
+  const pageSize = options.pageSize ?? 20;
+  const [games, drawTypes] = await Promise.all([fetchGames(), fetchDrawTypes()]);
+  const drawType = drawTypes.find((dt) => dt._id === drawTypeId);
+  const game = drawType ? games.find((g) => g._id === drawType.gameId) : undefined;
+  if (!drawType || !game) return { draws: [], lastDoc: null, hasMore: false };
+
+  const drawsRef = collection(db(), "draws");
+  let q;
+  if (options.date) {
+    const start = new Date(options.date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    q = query(
+      drawsRef,
+      where("drawTypeId", "==", drawTypeId),
+      where("date", ">=", Timestamp.fromDate(start)),
+      where("date", "<", Timestamp.fromDate(end)),
+      orderBy("date", "desc"),
+      limit(1),
+    );
+  } else if (options.after) {
+    q = query(
+      drawsRef,
+      where("drawTypeId", "==", drawTypeId),
+      orderBy("date", "desc"),
+      startAfter(options.after),
+      limit(pageSize),
+    );
+  } else {
+    q = query(
+      drawsRef,
+      where("drawTypeId", "==", drawTypeId),
+      orderBy("date", "desc"),
+      limit(pageSize),
+    );
+  }
+
+  const snap = await getDocs(q);
+  const draws: DrawWithContext[] = snap.docs.map((d) => ({
+    ...drawFromDoc(d.id, d.data() as DrawDoc),
+    game,
+    drawType,
+  }));
+  const lastDoc = (snap.docs.at(-1) as QueryDocumentSnapshot<DrawDoc> | undefined) ?? null;
+  const hasMore = !options.date && snap.docs.length === pageSize;
+  return { draws, lastDoc, hasMore };
+};
+
+export type DrawsPageCursor = QueryDocumentSnapshot<DrawDoc>;
 
 export const getDeviceDocRef = (token: string) => doc(db(), "devices", token);
 
