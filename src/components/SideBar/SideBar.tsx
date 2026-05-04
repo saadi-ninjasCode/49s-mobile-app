@@ -2,7 +2,6 @@ import { DrawerContentScrollView, type DrawerContentComponentProps } from "@reac
 import { CommonActions, DrawerActions, useTheme } from "@react-navigation/native";
 import React from "react";
 import { Image, View } from "react-native";
-import { dashboardInfo } from "../../mock/dashboard";
 import { DrawerItems } from "../Drawer";
 import { TextDefault } from "../Text";
 import { ThemeSwitcher } from "../ThemeSwitcher";
@@ -19,12 +18,27 @@ interface MenuConfig {
 const Home: MenuConfig = { title: "Home", icon: "home", navigateTo: "index" };
 const TopMenus: MenuConfig[] = [
   { title: "Notifications", icon: "bell", navigateTo: "notification" },
-  { title: "Hot & Cold", icon: "snowflake", navigateTo: "favourite" },
+  { title: "Hot & Cold", icon: "snowflake", navigateTo: "ballFrequency" },
   { title: "Number Generator", icon: "sync-alt", navigateTo: "generator" },
 ];
 const BottomMenu: MenuConfig[] = [
   { title: "Terms & Conditions", icon: "file-prescription", navigateTo: "condition" },
   { title: "Privacy Policy", icon: "file-signature", navigateTo: "privacy" },
+];
+
+interface DrawMenuEntry {
+  drawTypeId: string;
+  gameId: string;
+  name: string;
+  iconName: string;
+}
+
+const FORTY_NINES_GAME_ID = "forty-nines";
+const DrawMenu: DrawMenuEntry[] = [
+  { drawTypeId: "brunchtime", gameId: FORTY_NINES_GAME_ID, name: "Brunchtime", iconName: "coffee" },
+  { drawTypeId: "lunchtime",  gameId: FORTY_NINES_GAME_ID, name: "Lunchtime",  iconName: "utensils" },
+  { drawTypeId: "drivetime",  gameId: FORTY_NINES_GAME_ID, name: "Drivetime",  iconName: "car" },
+  { drawTypeId: "teatime",    gameId: FORTY_NINES_GAME_ID, name: "Teatime",    iconName: "mug-hot" },
 ];
 
 function SideBar(props: DrawerContentComponentProps) {
@@ -63,18 +77,18 @@ function SideBar(props: DrawerContentComponentProps) {
                 {"Results"}
               </TextDefault>
               <View style={styles.resultContainer}>
-                {dashboardInfo.map((entry) => (
+                {DrawMenu.map((entry) => (
                   <DrawerItems
-                    key={entry.drawType._id}
+                    key={entry.drawTypeId}
                     name={"draw"}
-                    icon={entry.drawType.icon_name}
-                    text={entry.drawType.name}
+                    icon={entry.iconName}
+                    text={entry.name}
                     active={false}
                     onPress={() =>
                       navigateAndClose("draw", {
-                        gameId: entry.game._id,
-                        drawTypeId: entry.drawType._id,
-                        name: entry.drawType.name,
+                        gameId: entry.gameId,
+                        drawTypeId: entry.drawTypeId,
+                        name: entry.name,
                       })
                     }
                   />

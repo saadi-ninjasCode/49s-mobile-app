@@ -1,9 +1,10 @@
 import { useTheme } from "@react-navigation/native";
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { SectionList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { EmptyView, ErrorView, LoadingView } from "../../components/ListState";
 import { TextDefault } from "../../components/Text";
-import { favouriteBall } from "../../mock/favouriteBall";
+import { fetchBallFrequency } from "../../services/firestore";
 import { alignment } from "../../utilities";
 import { useStyles } from "./styles";
 
@@ -13,7 +14,7 @@ interface BallsProps {
   array: BallStat[];
 }
 
-function Balls({ name, color, array }: BallsProps) {
+function Balls({ name, color, array }: Readonly<BallsProps>) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   return (
@@ -46,17 +47,65 @@ function Balls({ name, color, array }: BallsProps) {
   );
 }
 
-interface FavouriteSectionItem {
+interface BallFrequencySectionItem {
   hotBall: BallStat[];
   coldBall: BallStat[];
 }
 
-function FavouriteBall() {
+function BallFrequency() {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
-  const sectionData = favouriteBall.sections.map((item, index) => ({
+  const [data, setData] = useState<BallFrequencyData | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setError(null);
+    fetchBallFrequency()
+      .then((result) => {
+        if (!cancelled) setData(result);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e as Error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [retryKey]);
+
+  const handleRetry = useCallback(() => {
+    setData(null);
+    setRetryKey((k) => k + 1);
+  }, []);
+
+  if (data === null && error) {
+    return (
+      <SafeAreaView edges={["bottom", "left", "right"]} style={[styles.flex, styles.mainBackground]}>
+        <ErrorView message="Couldn't load stats." onRetry={handleRetry} />
+      </SafeAreaView>
+    );
+  }
+
+  if (data === null) {
+    return (
+      <SafeAreaView edges={["bottom", "left", "right"]} style={[styles.flex, styles.mainBackground]}>
+        <LoadingView />
+      </SafeAreaView>
+    );
+  }
+
+  if (data.sections.length === 0) {
+    return (
+      <SafeAreaView edges={["bottom", "left", "right"]} style={[styles.flex, styles.mainBackground]}>
+        <EmptyView message="No stats available yet." onRetry={handleRetry} />
+      </SafeAreaView>
+    );
+  }
+
+  const sectionData = data.sections.map((item, index) => ({
     name: item.name,
-    data: [{ hotBall: item.hotBall, coldBall: item.coldBall }] as FavouriteSectionItem[],
+    data: [{ hotBall: item.hotBall, coldBall: item.coldBall }] as BallFrequencySectionItem[],
     index,
   }));
 
@@ -87,4 +136,4 @@ function FavouriteBall() {
   );
 }
 
-export default React.memo(FavouriteBall);
+export default React.memo(BallFrequency);

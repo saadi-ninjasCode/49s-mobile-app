@@ -6,18 +6,18 @@ export const ballsTransformation = (balls: number[], pending: boolean): string =
   return balls.map((x) => (x ? String(x) : '-')).join(', ');
 };
 
-export const favouriteBallTransformation = (balls: BallStat[]): string => {
+export const ballFrequencyTransformation = (balls: BallStat[]): string => {
   if (balls.length < 1) return 'None';
-  const ballArr: string[] = Array(3).fill('-');
+  const ballArr: string[] = new Array(balls.length).fill('-');
   balls.forEach((x, index) => {
     ballArr[index] = x.ball ? String(x.ball) : '-';
   });
   return ballArr.join(' , ');
 };
 
-export const favouriteTimeTransformation = (balls: BallStat[]): string => {
+export const ballFrequencyTimeTransformation = (balls: BallStat[]): string => {
   if (balls.length < 1) return 'None';
-  const timeArr: string[] = Array(3).fill('-');
+  const timeArr: string[] = new Array(balls.length).fill('-');
   balls.forEach((x, index) => {
     timeArr[index] = x.times ? String(x.times) : '-';
   });

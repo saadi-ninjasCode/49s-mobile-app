@@ -6,6 +6,7 @@ interface Game {
   mainBallMax: number;
   specialBallCount: number;
   specialBallMax: number;
+  hotColdCount?: number;
 }
 
 interface DrawType {
@@ -44,16 +45,15 @@ interface BallStat {
   times: number;
 }
 
-interface FavouriteDrawTypeSection {
-  drawTypeId: string;
+interface BallFrequencySection {
   gameId: string;
   name: string;
   hotBall: BallStat[];
   coldBall: BallStat[];
 }
 
-interface FavouriteBallData {
-  sections: FavouriteDrawTypeSection[];
+interface BallFrequencyData {
+  sections: BallFrequencySection[];
 }
 
 interface TimeLeft {

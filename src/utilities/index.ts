@@ -3,9 +3,9 @@ import colors from './colors';
 import { formatLocalDrawTime, getLocalTimeZone, getLocalTimeZoneAbbr, isSameDay, nextDrawTimestamp, todaysDrawTimestamp } from './date';
 import { scale, verticalScale } from './scaling';
 import {
+  ballFrequencyTimeTransformation,
+  ballFrequencyTransformation,
   dateTransformation,
-  favouriteBallTransformation,
-  favouriteTimeTransformation,
   getTime,
   getZone,
   ballsTransformation,
@@ -15,10 +15,10 @@ import { timeDifference } from './time';
 
 export {
   alignment,
+  ballFrequencyTimeTransformation,
+  ballFrequencyTransformation,
   colors,
   dateTransformation,
-  favouriteBallTransformation,
-  favouriteTimeTransformation,
   formatLocalDrawTime,
   getLocalTimeZone,
   getLocalTimeZoneAbbr,

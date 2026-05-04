@@ -70,7 +70,9 @@ export const fetchGames = async (): Promise<Game[]> => {
 export const fetchDrawTypes = async (): Promise<DrawType[]> => {
   if (drawTypesCache) return drawTypesCache;
   const snap = await getDocs(collection(db(), "drawTypes"));
-  drawTypesCache = snap.docs.map((d) => drawTypeFromDoc(d.id, d.data() as DrawTypeDoc));
+  drawTypesCache = snap.docs
+    .map((d) => drawTypeFromDoc(d.id, d.data() as DrawTypeDoc))
+    .sort((a, b) => a.hour - b.hour || a.minute - b.minute);
   return drawTypesCache;
 };
 
@@ -212,6 +214,19 @@ export const fetchDrawsPage = async (
 };
 
 export type DrawsPageCursor = QueryDocumentSnapshot<DrawDoc>;
+
+export const fetchBallFrequency = async (): Promise<BallFrequencyData> => {
+  const games = await fetchGames();
+  const sections: BallFrequencySection[] = games
+    .filter((g) => (g.hotBall?.length ?? 0) > 0 || (g.coldBall?.length ?? 0) > 0)
+    .map((g) => ({
+      gameId: g._id,
+      name: g.name,
+      hotBall: g.hotBall ?? [],
+      coldBall: g.coldBall ?? [],
+    }));
+  return { sections };
+};
 
 export const getDeviceDocRef = (token: string) => doc(db(), "devices", token);
 

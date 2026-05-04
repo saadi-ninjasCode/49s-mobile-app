@@ -34,7 +34,7 @@ function ThemedDrawer() {
         <Drawer.Screen name="index" options={{ title: "Results" }} />
         <Drawer.Screen name="draw" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="notification" options={{ title: "Notifications" }} />
-        <Drawer.Screen name="favourite" options={{ title: "Hot & Cold" }} />
+        <Drawer.Screen name="ballFrequency" options={{ title: "Hot & Cold" }} />
         <Drawer.Screen name="generator" options={{ title: "Number Generator" }} />
         <Drawer.Screen name="condition" options={{ title: "Terms & Conditions" }} />
         <Drawer.Screen name="privacy" options={{ title: "Privacy Policy" }} />

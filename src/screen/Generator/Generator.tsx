@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, Pressable, Switch, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextDefault } from "../../components/Text";
-import { randomBalls } from "../../utilities/draw";
+import { randomBalls, randomBoosterBall } from "../../utilities/draw";
 import { useStyles } from "./styles";
 
 type BallValue = number | "?";
@@ -130,15 +130,9 @@ function Generator() {
   );
 
   const drawOnce = useCallback(() => {
-    const total = withBooster ? count + 1 : count;
-    const numbers = randomBalls(total);
-    if (withBooster) {
-      setMainBalls(numbers.slice(0, count));
-      setBooster(numbers.at(-1) ?? "?");
-    } else {
-      setMainBalls(numbers);
-      setBooster(null);
-    }
+    const numbers = randomBalls(count);
+    setMainBalls(numbers);
+    setBooster(withBooster ? randomBoosterBall(numbers) : null);
   }, [count, withBooster]);
 
   const generate = useCallback(() => {
