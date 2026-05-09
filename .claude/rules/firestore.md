@@ -63,13 +63,34 @@ Every server-side write to `games/{id}` **must** include `updatedAt: serverTimes
 - **ID**: `` `${drawTypeId}_${YYYYMMDD}` ``.
   - Examples: `lunchtime_20260508`, `teatime_20260508`.
   - The `YYYYMMDD` portion is **always the Europe/London civil date** of the draw, regardless of the writer's local timezone.
-- **Fields** (mirrored in the `DrawDoc` type at [src/services/firestore.ts](../../src/services/firestore.ts)):
+- **Fields** (mirrored in the `DrawDocData` type at [src/services/sync/firestoreQueries.ts](../../src/services/sync/firestoreQueries.ts) and [src/services/sync/refreshDraws.ts](../../src/services/sync/refreshDraws.ts)):
   - `gameId: string`
   - `drawTypeId: string` — FK; queries filter on this
   - `date: Timestamp` — the draw's scheduled instant, expressed as Europe/London local time (`hour`/`minute` from the drawType, on the day matching the ID's `YYYYMMDD`).
   - `balls: number[]` — sorted ascending, unique
   - `specialBalls: number[]` — booster ball(s); excluded from `balls`
   - `pending: boolean`
+  - `updatedAt: Timestamp` — see write invariant below
+  - `deletedAt: Timestamp | null` — soft-delete tombstone; `null` for live docs
+
+#### Write invariant
+
+Every server-side write to `draws/{id}` **must** include `updatedAt: serverTimestamp()` (or a server-monotonic equivalent). The mobile client's per-drawType delta-sync (`refreshDrawsIfStale` in [src/services/sync/refreshDraws.ts](../../src/services/sync/refreshDraws.ts)) uses `where("updatedAt", ">", localMax)` — docs missing `updatedAt` are silently skipped by Firestore, and non-monotonic timestamps cause clients to miss edits. Treat `updatedAt` as part of the write contract, not a derived field.
+
+#### Delete contract — soft-delete only
+
+**Never `deleteDoc(doc(db, "draws", id))`.** A hard delete is invisible to the watermark query (Firestore returns no row for a missing doc), so the mobile client would keep the stale local copy forever. Instead, write a tombstone:
+
+```ts
+setDoc(doc(db, "draws", id), {
+  deletedAt: serverTimestamp(),
+  updatedAt: serverTimestamp(),
+}, { merge: true });
+```
+
+The mobile client treats any `deletedAt != null` doc returned by the watermark query as a tombstone, marks the local row as deleted, and filters it out of every read.
+
+To "undelete" (rare — e.g. admin restored a wrongly-deleted draw): re-write the full doc payload via `setDoc(..., { merge: true })` with `deletedAt: null` and a fresh `updatedAt: serverTimestamp()`. The client's `INSERT OR REPLACE` upsert clears the local `deletedAt` automatically.
 
 ## Client-side mapping
 
@@ -85,11 +106,11 @@ Always copy `snap.id` into `_id` when reading. Do **not** also store the ID insi
 ## Adding a new collection
 
 1. Pick an ID pattern from the four forms above. If none fits, that's a signal the schema needs another look.
-2. Add the read path to [src/services/firestore.ts](../../src/services/firestore.ts):
+2. Add the read path to [src/services/firestore.ts](../../src/services/firestore.ts) (or a new file under [src/services/sync/](../../src/services/sync/)):
    - List → `getDocs(collection(db(), "<name>"))`
    - One known doc → `getDoc(doc(db(), "<name>", id))`
-   - Live updates → `onSnapshot(query(...))` writing through to SQLite, the way `startDashboardSync` does.
-3. If clients should read offline, add a SQLite mirror under [src/services/db/](../../src/services/db/) and write through on snapshot — Firestore's built-in cache is **disabled** ([firestore.ts:28](../../src/services/firestore.ts#L28)), SQLite is the canonical local store.
+   - On-demand delta refresh → watermark query `where("updatedAt", ">", localMax)`, writing through to SQLite, the way `refreshGamesIfStale` (games) and `refreshDrawsIfStale` (draws) do. There are no live `onSnapshot` listeners in this app — refreshes are driven by app boot, screen focus, and pull-to-refresh.
+3. If clients should read offline, add a SQLite mirror under [src/services/db/](../../src/services/db/) and write through on each refresh — Firestore's built-in cache is **disabled** ([firestore.ts:23](../../src/services/firestore.ts#L23)), SQLite is the canonical local store.
 
 ## `collection()` vs `doc()` — quick reference
 
@@ -108,4 +129,6 @@ Rule: paths alternate `collection / doc / collection / …`. `collection(...)` e
 - ❌ Querying for a doc whose ID you already know — read it directly with `getDoc(doc(...))`.
 - ❌ Re-enabling Firestore's offline persistence without removing the SQLite mirror first — the two caches will diverge.
 - ❌ Writing to `games/{id}` without bumping `updatedAt: serverTimestamp()`. Breaks the client's delta watermark.
+- ❌ Writing to `draws/{id}` without bumping `updatedAt: serverTimestamp()`. Same reason — the mobile delta-sync is keyed on `updatedAt`.
+- ❌ `deleteDoc(doc(db, "draws", id))` — hard deletes are invisible to the mobile delta-sync. Use the soft-delete contract (set `deletedAt`) instead.
 - ❌ Computing the `YYYYMMDD` portion of a draws ID, or the `date` field on a draws doc, from system-local time or UTC. Both must be derived from **Europe/London** (e.g. via `Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" })`). Mixed-timezone writers will otherwise produce two IDs for the same draw, or land the timestamp on the wrong civil day. **Note**: this rule does *not* apply to `updatedAt` on `games/{id}` — that stays `serverTimestamp()` (see the write invariant above).

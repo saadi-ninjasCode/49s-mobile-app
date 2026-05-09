@@ -1,7 +1,7 @@
 import { getDB } from '../db/database';
 import * as drawTypesRepo from '../db/drawTypes.repo';
+import { refreshDrawsIfStale } from './refreshDraws';
 import { seed } from './seed';
-import { fetchLatestSinceLocal } from './syncDraws';
 
 export interface BootstrapResult {
   wasFreshInstall: boolean;
@@ -38,13 +38,14 @@ export async function bootstrap(): Promise<BootstrapResult> {
 }
 
 /**
- * Non-blocking catch-up after warm launch. Pulls new draws since the latest
- * local row for each drawType.
+ * Non-blocking catch-up after warm launch. Per drawType, pulls every doc whose
+ * server `updatedAt` exceeds the local watermark — covers new draws, edits to
+ * historical draws, and tombstones in one query each.
  */
 export async function backgroundRefresh(): Promise<void> {
   const db = getDB();
   const drawTypes = await drawTypesRepo.getAllDrawTypes(db);
   await Promise.all(
-    drawTypes.map((dt) => fetchLatestSinceLocal(dt._id).catch(() => 0)),
+    drawTypes.map((dt) => refreshDrawsIfStale(dt._id).catch(() => undefined)),
   );
 }

@@ -8,6 +8,7 @@ interface DrawRow {
   ballsJson: string;
   specialBallsJson: string;
   cachedAt: number;
+  serverUpdatedAt: number | null;
 }
 
 const rowToDraw = (r: DrawRow): Draw => ({
@@ -17,6 +18,7 @@ const rowToDraw = (r: DrawRow): Draw => ({
   date: r.date,
   balls: JSON.parse(r.ballsJson),
   specialBalls: JSON.parse(r.specialBallsJson),
+  serverUpdatedAt: r.serverUpdatedAt ?? undefined,
 });
 
 export interface PaginationState {
@@ -40,10 +42,24 @@ export const getNewestLocalDate = async (
   drawTypeId: string,
 ): Promise<number | null> => {
   const row = await db.getFirstAsync<{ maxDate: number | null }>(
-    'SELECT MAX(date) as maxDate FROM draws WHERE drawTypeId = ?',
+    'SELECT MAX(date) as maxDate FROM draws WHERE drawTypeId = ? AND deletedAt IS NULL',
     drawTypeId,
   );
   return row?.maxDate ?? null;
+};
+
+// Watermark for the Firestore delta-sync. Includes tombstoned rows on purpose:
+// if a tombstone were excluded, deleting the newest draw would rewind the
+// watermark and re-pull every doc on the next sync.
+export const getMaxServerUpdatedAt = async (
+  db: SQLiteDatabase,
+  drawTypeId: string,
+): Promise<number | null> => {
+  const row = await db.getFirstAsync<{ maxAt: number | null }>(
+    'SELECT MAX(serverUpdatedAt) as maxAt FROM draws WHERE drawTypeId = ?',
+    drawTypeId,
+  );
+  return row?.maxAt ?? null;
 };
 
 export const getLatestDraw = async (
@@ -51,7 +67,7 @@ export const getLatestDraw = async (
   drawTypeId: string,
 ): Promise<Draw | null> => {
   const row = await db.getFirstAsync<DrawRow>(
-    'SELECT * FROM draws WHERE drawTypeId = ? ORDER BY date DESC LIMIT 1',
+    'SELECT * FROM draws WHERE drawTypeId = ? AND deletedAt IS NULL ORDER BY date DESC LIMIT 1',
     drawTypeId,
   );
   return row ? rowToDraw(row) : null;
@@ -72,7 +88,7 @@ export const getContiguousDraws = async (
   const minDate = state?.oldestContiguousDate ?? 0;
   const rows = await db.getAllAsync<DrawRow>(
     `SELECT * FROM draws
-     WHERE drawTypeId = ? AND date >= ?
+     WHERE drawTypeId = ? AND date >= ? AND deletedAt IS NULL
      ORDER BY date DESC
      LIMIT ? OFFSET ?`,
     drawTypeId,
@@ -91,7 +107,7 @@ export const getDrawsForDay = async (
 ): Promise<Draw[]> => {
   const rows = await db.getAllAsync<DrawRow>(
     `SELECT * FROM draws
-     WHERE drawTypeId = ? AND date >= ? AND date < ?
+     WHERE drawTypeId = ? AND date >= ? AND date < ? AND deletedAt IS NULL
      ORDER BY date DESC`,
     drawTypeId,
     startMs,
@@ -108,10 +124,12 @@ export const upsertDraws = async (
   const now = Date.now();
   await db.withTransactionAsync(async () => {
     for (const d of draws) {
+      // INSERT OR REPLACE clears deletedAt back to NULL — correct semantic for
+      // an "undelete" upsert (server cleared deletedAt, we mirror).
       await db.runAsync(
         `INSERT OR REPLACE INTO draws
-         (id, gameId, drawTypeId, date, ballsJson, specialBallsJson, cachedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (id, gameId, drawTypeId, date, ballsJson, specialBallsJson, cachedAt, serverUpdatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         d._id,
         d.gameId,
         d.drawTypeId,
@@ -119,6 +137,24 @@ export const upsertDraws = async (
         JSON.stringify(d.balls),
         JSON.stringify(d.specialBalls),
         now,
+        d.serverUpdatedAt ?? null,
+      );
+    }
+  });
+};
+
+export const softDeleteDraws = async (
+  db: SQLiteDatabase,
+  ids: ReadonlyArray<{ id: string; serverUpdatedAt: number | null; deletedAtMs: number }>,
+): Promise<void> => {
+  if (ids.length === 0) return;
+  await db.withTransactionAsync(async () => {
+    for (const { id, serverUpdatedAt, deletedAtMs } of ids) {
+      await db.runAsync(
+        'UPDATE draws SET deletedAt = ?, serverUpdatedAt = ? WHERE id = ?',
+        deletedAtMs,
+        serverUpdatedAt,
+        id,
       );
     }
   });

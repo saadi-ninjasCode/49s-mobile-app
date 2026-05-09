@@ -13,9 +13,9 @@ import { useDbChange } from "../../services/db/dbEvents";
 import * as drawsRepo from "../../services/db/draws.repo";
 import * as drawTypesRepo from "../../services/db/drawTypes.repo";
 import * as gamesRepo from "../../services/db/games.repo";
+import { refreshDrawsIfStale } from "../../services/sync/refreshDraws";
 import {
   fetchDateFilter,
-  fetchLatestSinceLocal,
   loadNextPage,
   PAGE_SIZE,
 } from "../../services/sync/syncDraws";
@@ -115,7 +115,7 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
       });
   }, [drawTypeId, drawType, game, selectedDate, reloadFromDb]);
 
-  // Re-render on draw inserts (snapshot, sync) — only when not in date-filter mode
+  // Re-render on draw inserts/tombstones — only when not in date-filter mode
   useDbChange("draws", () => {
     if (!selectedDate) void reloadFromDb();
   });
@@ -155,10 +155,10 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
         const composed = draw ? compose(draw) : null;
         setDraws(composed ? [composed] : []);
       } else {
-        const newCount = await fetchLatestSinceLocal(drawTypeId, PAGE_SIZE);
+        await refreshDrawsIfStale(drawTypeId);
         if (reqId !== requestIdRef.current) return;
-        if (newCount > 0) setVisibleCount((prev) => prev + newCount);
-        // useDbChange triggers reloadFromDb on the upserts
+        // useDbChange triggers reloadFromDb on inserts/tombstones; visibleCount
+        // grows organically as the user scrolls (loadNextPage).
       }
     } catch (e) {
       if (reqId !== requestIdRef.current) return;

@@ -16,6 +16,8 @@ interface DrawDocData {
   date: Timestamp;
   balls: number[];
   specialBalls: number[];
+  updatedAt?: Timestamp;
+  deletedAt?: Timestamp | null;
 }
 
 const fdb = () => getFirestore(getApp());
@@ -27,7 +29,13 @@ const drawFromSnap = (id: string, data: DrawDocData): Draw => ({
   date: data.date.toMillis(),
   balls: data.balls,
   specialBalls: data.specialBalls,
+  serverUpdatedAt: data.updatedAt?.toMillis(),
 });
+
+// Tombstoned docs come back from history-page / date-filter queries the same
+// as live ones — strip them at the boundary so the caller never inserts a
+// soft-deleted draw or renders one. The page-size cursor is unaffected.
+const isLive = (data: DrawDocData): boolean => !data.deletedAt;
 
 export async function queryLatestDraws(
   drawTypeId: string,
@@ -41,34 +49,10 @@ export async function queryLatestDraws(
     limit(max),
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => drawFromSnap(d.id, d.data() as DrawDocData));
-}
-
-/**
- * Returns up to `max` draws strictly newer than `afterMs`, **oldest-first**.
- *
- * ASC ordering is intentional: it lets the caller iterate forward to fill an
- * arbitrarily large gap (e.g. user reopens the app after several days of
- * missed draws) by using the last returned row's date as the next cursor.
- * A DESC `limit(N)` query would silently drop the oldest rows of any gap >N.
- *
- * Requires a Firestore composite index on `(drawTypeId ASC, date ASC)`.
- */
-export async function queryDrawsAfter(
-  drawTypeId: string,
-  afterMs: number,
-  max: number,
-): Promise<Draw[]> {
-  const drawsRef = collection(fdb(), 'draws');
-  const q = query(
-    drawsRef,
-    where('drawTypeId', '==', drawTypeId),
-    where('date', '>', Timestamp.fromMillis(afterMs)),
-    orderBy('date', 'asc'),
-    limit(max),
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => drawFromSnap(d.id, d.data() as DrawDocData));
+  return snap.docs
+    .map((d) => ({ id: d.id, data: d.data() as DrawDocData }))
+    .filter((x) => isLive(x.data))
+    .map((x) => drawFromSnap(x.id, x.data));
 }
 
 export async function queryDrawsBefore(
@@ -85,7 +69,10 @@ export async function queryDrawsBefore(
     limit(max),
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => drawFromSnap(d.id, d.data() as DrawDocData));
+  return snap.docs
+    .map((d) => ({ id: d.id, data: d.data() as DrawDocData }))
+    .filter((x) => isLive(x.data))
+    .map((x) => drawFromSnap(x.id, x.data));
 }
 
 export async function queryDrawsForDay(
@@ -103,5 +90,8 @@ export async function queryDrawsForDay(
     limit(1),
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => drawFromSnap(d.id, d.data() as DrawDocData));
+  return snap.docs
+    .map((d) => ({ id: d.id, data: d.data() as DrawDocData }))
+    .filter((x) => isLive(x.data))
+    .map((x) => drawFromSnap(x.id, x.data));
 }

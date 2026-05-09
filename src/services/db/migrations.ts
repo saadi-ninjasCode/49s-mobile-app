@@ -37,10 +37,15 @@ const MIGRATIONS: Migration[] = [
         date INTEGER NOT NULL,
         ballsJson TEXT NOT NULL,
         specialBallsJson TEXT NOT NULL,
-        cachedAt INTEGER NOT NULL
+        cachedAt INTEGER NOT NULL,
+        serverUpdatedAt INTEGER,
+        deletedAt INTEGER
       );
 
       CREATE INDEX IF NOT EXISTS idx_draws_drawTypeId_date ON draws(drawTypeId, date DESC);
+
+      CREATE INDEX IF NOT EXISTS idx_draws_drawTypeId_serverUpdatedAt
+        ON draws(drawTypeId, serverUpdatedAt);
 
       CREATE TABLE IF NOT EXISTS drawType_pagination (
         drawTypeId TEXT PRIMARY KEY,

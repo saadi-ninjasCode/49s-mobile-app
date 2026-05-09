@@ -8,7 +8,7 @@ import { useDbChange } from "../../services/db/dbEvents";
 import * as drawsRepo from "../../services/db/draws.repo";
 import * as drawTypesRepo from "../../services/db/drawTypes.repo";
 import * as gamesRepo from "../../services/db/games.repo";
-import { startDashboardSync } from "../../services/firestore";
+import { refreshDashboard } from "../../services/firestore";
 import { useStyles } from "./styles";
 
 const keyExtractor = (item: DashboardEntry) => item.drawType._id;
@@ -48,7 +48,7 @@ function Main() {
   useDbChange("games", reload);
 
   // Real-time sync: snapshot writes through to SQLite; reload runs via useDbChange.
-  useEffect(() => startDashboardSync(), []);
+  useEffect(() => void refreshDashboard(), []);
 
   const handleRetry = useCallback(() => {
     setEntries(null);

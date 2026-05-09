@@ -4,20 +4,15 @@ import {
   getDocs,
   getFirestore,
   initializeFirestore,
-  limit,
-  onSnapshot,
-  orderBy,
   query,
   Timestamp,
   where,
 } from "@react-native-firebase/firestore";
 import type { SQLiteDatabase } from "expo-sqlite";
 import { getDB } from "./db/database";
-import * as drawsRepo from "./db/draws.repo";
 import * as drawTypesRepo from "./db/drawTypes.repo";
 import * as gamesRepo from "./db/games.repo";
-
-type Unsubscribe = () => void;
+import { refreshDrawsIfStale } from "./sync/refreshDraws";
 
 const _app = getApp();
 
@@ -34,14 +29,6 @@ interface DrawTypeDoc {
   hour?: number;
   minute?: number;
   timeZone?: string;
-}
-
-interface DrawDoc {
-  gameId: string;
-  drawTypeId: string;
-  date: Timestamp;
-  balls: number[];
-  specialBalls: number[];
 }
 
 interface GameDoc {
@@ -69,15 +56,6 @@ const drawTypeFromDoc = (id: string, data: DrawTypeDoc): DrawType => ({
   timeZone: data.timeZone ?? "Europe/London",
 });
 
-const drawFromDoc = (id: string, data: DrawDoc): Draw => ({
-  _id: id,
-  gameId: data.gameId,
-  drawTypeId: data.drawTypeId,
-  date: data.date.toMillis(),
-  balls: data.balls,
-  specialBalls: data.specialBalls,
-});
-
 const gameFromDoc = (id: string, data: GameDoc): Game => ({
   _id: id,
   name: data.name,
@@ -91,10 +69,6 @@ const gameFromDoc = (id: string, data: GameDoc): Game => ({
   coldBall: data.coldBall,
   serverUpdatedAt: data.updatedAt?.toMillis(),
 });
-
-const writeDrawToCache = (draw: Draw): void => {
-  drawsRepo.upsertDraws(getDB(), [draw]).catch(() => {});
-};
 
 export const fetchGames = async (): Promise<Game[]> => {
   const snap = await getDocs(collection(db(), "games"));
@@ -132,44 +106,17 @@ export const fetchDrawTypes = async (): Promise<DrawType[]> => {
 };
 
 /**
- * Mounts onSnapshot listeners (limit 1) per known drawType. Each event upserts
- * the latest draw into SQLite — UI screens read from SQLite and re-render via
- * `useDbChange('draws')`. There is no consumer callback; this is purely a
- * write-through sync. Returns an unsubscribe that closes all listeners.
+ * One-shot dashboard refresh: pull stale-only games via the `updatedAt`
+ * watermark, and run the equivalent watermark+tombstone sync per drawType.
+ * UI screens read from SQLite and re-render via `useDbChange`.
  *
  * Pre-condition: SQLite has drawType rows (bootstrap completed).
  */
-export const startDashboardSync = (): Unsubscribe => {
-  let cancelled = false;
-  const unsubs: Unsubscribe[] = [];
-
-  (async () => {
-    const sqlite = getDB();
-    void refreshGamesIfStale(sqlite);
-
-    const drawTypes = await drawTypesRepo.getAllDrawTypes(sqlite);
-    if (cancelled) return;
-
-    const drawsRef = collection(db(), "draws");
-    drawTypes.forEach((dt) => {
-      const q = query(
-        drawsRef,
-        where("drawTypeId", "==", dt._id),
-        orderBy("date", "desc"),
-        limit(1),
-      );
-      const unsub = onSnapshot(q, (snap) => {
-        if (cancelled) return;
-        const docSnap = snap?.docs?.[0];
-        if (!docSnap) return;
-        writeDrawToCache(drawFromDoc(docSnap.id, docSnap.data() as DrawDoc));
-      });
-      unsubs.push(unsub);
-    });
-  })();
-
-  return () => {
-    cancelled = true;
-    unsubs.forEach((u) => u());
-  };
+export const refreshDashboard = async (): Promise<void> => {
+  const sqlite = getDB();
+  void refreshGamesIfStale(sqlite);
+  const drawTypes = await drawTypesRepo.getAllDrawTypes(sqlite);
+  await Promise.all(
+    drawTypes.map((dt) => refreshDrawsIfStale(dt._id).catch(() => undefined)),
+  );
 };

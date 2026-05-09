@@ -29,6 +29,7 @@ interface Draw {
   date: number;
   balls: number[];
   specialBalls: number[];
+  serverUpdatedAt?: number;
 }
 
 interface DashboardEntry {
