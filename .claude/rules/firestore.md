@@ -62,11 +62,11 @@ Every server-side write to `games/{id}` **must** include `updatedAt: serverTimes
 
 - **ID**: `` `${drawTypeId}_${YYYYMMDD}` ``.
   - Examples: `lunchtime_20260508`, `teatime_20260508`.
-  - The date portion uses local time in the draw's `timeZone`.
+  - The `YYYYMMDD` portion is **always the Europe/London civil date** of the draw, regardless of the writer's local timezone.
 - **Fields** (mirrored in the `DrawDoc` type at [src/services/firestore.ts](../../src/services/firestore.ts)):
   - `gameId: string`
   - `drawTypeId: string` — FK; queries filter on this
-  - `date: Timestamp`
+  - `date: Timestamp` — the draw's scheduled instant, expressed as Europe/London local time (`hour`/`minute` from the drawType, on the day matching the ID's `YYYYMMDD`).
   - `balls: number[]` — sorted ascending, unique
   - `specialBalls: number[]` — booster ball(s); excluded from `balls`
   - `pending: boolean`
@@ -108,3 +108,4 @@ Rule: paths alternate `collection / doc / collection / …`. `collection(...)` e
 - ❌ Querying for a doc whose ID you already know — read it directly with `getDoc(doc(...))`.
 - ❌ Re-enabling Firestore's offline persistence without removing the SQLite mirror first — the two caches will diverge.
 - ❌ Writing to `games/{id}` without bumping `updatedAt: serverTimestamp()`. Breaks the client's delta watermark.
+- ❌ Computing the `YYYYMMDD` portion of a draws ID, or the `date` field on a draws doc, from system-local time or UTC. Both must be derived from **Europe/London** (e.g. via `Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" })`). Mixed-timezone writers will otherwise produce two IDs for the same draw, or land the timestamp on the wrong civil day. **Note**: this rule does *not* apply to `updatedAt` on `games/{id}` — that stays `serverTimestamp()` (see the write invariant above).
