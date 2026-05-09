@@ -7,6 +7,9 @@ interface Game {
   specialBallCount: number;
   specialBallMax: number;
   hotColdCount?: number;
+  hotBall?: BallStat[];
+  coldBall?: BallStat[];
+  serverUpdatedAt?: number;
 }
 
 interface DrawType {
@@ -26,7 +29,6 @@ interface Draw {
   date: number;
   balls: number[];
   specialBalls: number[];
-  pending: boolean;
 }
 
 interface DashboardEntry {

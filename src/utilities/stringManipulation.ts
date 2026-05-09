@@ -1,11 +1,5 @@
 import { dateToCustom, dateToTime, dateToZone, dateWithWeekday } from './date';
 
-export const ballsTransformation = (balls: number[], pending: boolean): string => {
-  if (pending) return 'Pending';
-  if (balls.length === 0) return '-';
-  return balls.map((x) => (x ? String(x) : '-')).join(', ');
-};
-
 export const ballFrequencyTransformation = (balls: BallStat[]): string => {
   if (balls.length < 1) return 'None';
   const ballArr: string[] = new Array(balls.length).fill('-');

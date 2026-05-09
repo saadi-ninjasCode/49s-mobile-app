@@ -1,7 +1,10 @@
 import { DrawerContentScrollView, type DrawerContentComponentProps } from "@react-navigation/drawer";
 import { CommonActions, DrawerActions, useTheme } from "@react-navigation/native";
-import React from "react";
+import { useSQLiteContext } from "expo-sqlite";
+import React, { useCallback, useEffect, useState } from "react";
 import { Image, View } from "react-native";
+import { useDbChange } from "../../services/db/dbEvents";
+import * as drawTypesRepo from "../../services/db/drawTypes.repo";
 import { DrawerItems } from "../Drawer";
 import { TextDefault } from "../Text";
 import { ThemeSwitcher } from "../ThemeSwitcher";
@@ -26,26 +29,24 @@ const BottomMenu: MenuConfig[] = [
   { title: "Privacy Policy", icon: "file-signature", navigateTo: "privacy" },
 ];
 
-interface DrawMenuEntry {
-  drawTypeId: string;
-  gameId: string;
-  name: string;
-  iconName: string;
-}
-
-const FORTY_NINES_GAME_ID = "forty-nines";
-const DrawMenu: DrawMenuEntry[] = [
-  { drawTypeId: "brunchtime", gameId: FORTY_NINES_GAME_ID, name: "Brunchtime", iconName: "coffee" },
-  { drawTypeId: "lunchtime",  gameId: FORTY_NINES_GAME_ID, name: "Lunchtime",  iconName: "utensils" },
-  { drawTypeId: "drivetime",  gameId: FORTY_NINES_GAME_ID, name: "Drivetime",  iconName: "car" },
-  { drawTypeId: "teatime",    gameId: FORTY_NINES_GAME_ID, name: "Teatime",    iconName: "mug-hot" },
-];
-
 function SideBar(props: DrawerContentComponentProps) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
+  const db = useSQLiteContext();
   const { navigation, state } = props;
   const activeRouteName = state?.routes?.[state.index]?.name;
+  const [drawTypes, setDrawTypes] = useState<DrawType[]>([]);
+
+  const reloadDrawTypes = useCallback(async () => {
+    const rows = await drawTypesRepo.getAllDrawTypes(db);
+    setDrawTypes(rows);
+  }, [db]);
+
+  useEffect(() => {
+    void reloadDrawTypes();
+  }, [reloadDrawTypes]);
+
+  useDbChange("drawTypes", reloadDrawTypes);
 
   const navigateAndClose = (routeName: string, params?: Record<string, string>) => {
     navigation.dispatch(CommonActions.navigate({ name: routeName, params }));
@@ -77,17 +78,17 @@ function SideBar(props: DrawerContentComponentProps) {
                 {"Results"}
               </TextDefault>
               <View style={styles.resultContainer}>
-                {DrawMenu.map((entry) => (
+                {drawTypes.map((entry) => (
                   <DrawerItems
-                    key={entry.drawTypeId}
+                    key={entry._id}
                     name={"draw"}
-                    icon={entry.iconName}
+                    icon={entry.icon_name}
                     text={entry.name}
                     active={false}
                     onPress={() =>
                       navigateAndClose("draw", {
                         gameId: entry.gameId,
-                        drawTypeId: entry.drawTypeId,
+                        drawTypeId: entry._id,
                         name: entry.name,
                       })
                     }

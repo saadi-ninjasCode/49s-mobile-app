@@ -1,12 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import SqliteStorage from "expo-sqlite/kv-store";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useColorScheme } from "react-native";
 
-export type ThemeMode = 'light' | 'dark' | 'system';
-export type ColorScheme = 'light' | 'dark';
+export type ThemeMode = "light" | "dark" | "system";
+export type ColorScheme = "light" | "dark";
 
-const STORAGE_KEY = '@theme-mode';
-const MODE_CYCLE: ThemeMode[] = ['system', 'light', 'dark'];
+const STORAGE_KEY = "@theme-mode";
+const MODE_CYCLE: ThemeMode[] = ["system", "light", "dark"];
 
 interface ThemeModeContextValue {
   mode: ThemeMode;
@@ -17,16 +17,15 @@ interface ThemeModeContextValue {
 
 const ThemeModeContext = createContext<ThemeModeContextValue | null>(null);
 
-const isThemeMode = (value: unknown): value is ThemeMode =>
-  value === 'light' || value === 'dark' || value === 'system';
+const isThemeMode = (value: unknown): value is ThemeMode => value === "light" || value === "dark" || value === "system";
 
 export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme();
-  const [mode, setModeState] = useState<ThemeMode>('system');
+  const [mode, setModeState] = useState<ThemeMode>("system");
 
   useEffect(() => {
     let cancelled = false;
-    AsyncStorage.getItem(STORAGE_KEY).then((stored) => {
+    SqliteStorage.getItem(STORAGE_KEY).then((stored) => {
       if (!cancelled && isThemeMode(stored)) setModeState(stored);
     });
     return () => {
@@ -36,19 +35,19 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
 
   const setMode = useCallback((next: ThemeMode) => {
     setModeState(next);
-    AsyncStorage.setItem(STORAGE_KEY, next);
+    SqliteStorage.setItem(STORAGE_KEY, next);
   }, []);
 
   const cycleMode = useCallback(() => {
     setModeState((current) => {
       const idx = MODE_CYCLE.indexOf(current);
       const next = MODE_CYCLE[(idx + 1) % MODE_CYCLE.length];
-      AsyncStorage.setItem(STORAGE_KEY, next);
+      SqliteStorage.setItem(STORAGE_KEY, next);
       return next;
     });
   }, []);
 
-  const scheme: ColorScheme = mode === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : mode;
+  const scheme: ColorScheme = mode === "system" ? (systemScheme === "dark" ? "dark" : "light") : mode;
 
   const value = useMemo<ThemeModeContextValue>(
     () => ({ mode, scheme, setMode, cycleMode }),
@@ -60,6 +59,6 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
 
 export function useThemeMode(): ThemeModeContextValue {
   const ctx = useContext(ThemeModeContext);
-  if (!ctx) throw new Error('useThemeMode must be used within ThemeModeProvider');
+  if (!ctx) throw new Error("useThemeMode must be used within ThemeModeProvider");
   return ctx;
 }

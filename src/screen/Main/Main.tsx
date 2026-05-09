@@ -1,62 +1,66 @@
+import { useSQLiteContext } from "expo-sqlite";
 import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, type ListRenderItem, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  EmptyView,
-  ErrorView,
-  InlineErrorBanner,
-  LoadingView,
-} from "../../components/ListState";
+import { EmptyView, ErrorView, LoadingView } from "../../components/ListState";
 import MainCard from "../../components/MainCard/MainCard";
-import { subscribeDashboard } from "../../services/firestore";
+import { useDbChange } from "../../services/db/dbEvents";
+import * as drawsRepo from "../../services/db/draws.repo";
+import * as drawTypesRepo from "../../services/db/drawTypes.repo";
+import * as gamesRepo from "../../services/db/games.repo";
+import { startDashboardSync } from "../../services/firestore";
 import { useStyles } from "./styles";
-
-function Separator() {
-  const styles = useStyles();
-  return <View style={styles.seperator} />;
-}
 
 const keyExtractor = (item: DashboardEntry) => item.drawType._id;
 const renderItem: ListRenderItem<DashboardEntry> = ({ item }) => <MainCard {...item} />;
 
 function Main() {
   const styles = useStyles();
+  const db = useSQLiteContext();
   const [entries, setEntries] = useState<DashboardEntry[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
+
+  const reload = useCallback(async () => {
+    try {
+      const [games, drawTypes] = await Promise.all([gamesRepo.getAllGames(db), drawTypesRepo.getAllDrawTypes(db)]);
+      const gamesById = new Map(games.map((g) => [g._id, g]));
+      const result: DashboardEntry[] = [];
+      for (const dt of drawTypes) {
+        const latestDraw = await drawsRepo.getLatestDraw(db, dt._id);
+        result.push({
+          game: gamesById.get(dt.gameId) ?? ({} as Game),
+          drawType: dt,
+          latestDraw,
+        });
+      }
+      setEntries(result);
+      setError(null);
+    } catch (e) {
+      setError(e as Error);
+    }
+  }, [db]);
 
   useEffect(() => {
-    setError(null);
-    return subscribeDashboard((event) => {
-      if (event.type === "loading") {
-        return;
-      }
-      if (event.type === "data") {
-        setEntries(event.entries);
-        setError(null);
-        return;
-      }
-      setError(event.error);
-    });
-  }, [retryKey]);
+    void reload();
+  }, [reload]);
+
+  useDbChange("draws", reload);
+  useDbChange("games", reload);
+
+  // Real-time sync: snapshot writes through to SQLite; reload runs via useDbChange.
+  useEffect(() => startDashboardSync(), []);
 
   const handleRetry = useCallback(() => {
     setEntries(null);
-    setRetryKey((k) => k + 1);
-  }, []);
+    void reload();
+  }, [reload]);
 
-  const dismissBanner = useCallback(() => {
-    setError(null);
-    setRetryKey((k) => k + 1);
-  }, []);
+  const Separator = useCallback(() => <View style={styles.seperator} />, []);
 
   if (entries === null && error) {
     return (
       <SafeAreaView edges={["bottom", "left", "right"]} style={[styles.flex, styles.mainBackground]}>
-        <ErrorView
-          message="Couldn't load draws."
-          onRetry={handleRetry}
-        />
+        <ErrorView message="Couldn't load draws." onRetry={handleRetry} />
       </SafeAreaView>
     );
   }
@@ -72,17 +76,13 @@ function Main() {
   if (entries.length === 0) {
     return (
       <SafeAreaView edges={["bottom", "left", "right"]} style={[styles.flex, styles.mainBackground]}>
-        <EmptyView
-          message="No draws available yet."
-          onRetry={handleRetry}
-        />
+        <EmptyView message="No draws available yet." onRetry={handleRetry} />
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={[styles.flex, styles.mainBackground]}>
-      {error && <InlineErrorBanner onRetry={dismissBanner} />}
       <FlatList<DashboardEntry>
         data={entries}
         showsVerticalScrollIndicator={false}

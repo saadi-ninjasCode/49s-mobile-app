@@ -56,29 +56,24 @@ function MainCard(props: Readonly<DashboardEntry>) {
               {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone, props.drawType.timeZone)} (${props.drawType.timeZone})`}
             </TextDefault>
             <View style={styles.ballRow}>
-              {draw &&
-                (draw.pending ? (
-                  <TextDefault textColor={colors.yellow} H4 bold>
-                    {"Result Pending"}
-                  </TextDefault>
-                ) : (
-                  <>
-                    {draw.balls.filter(Boolean).map((item, index) => (
-                      <View style={[styles.ballContainer, { backgroundColor: colors.yellow }]} key={index}>
-                        <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center>
-                          {item}
-                        </TextDefault>
-                      </View>
-                    ))}
-                    {draw.specialBalls.filter(Boolean).map((item, index) => (
-                      <View style={[styles.ballContainer, { backgroundColor: colors.green }]} key={index}>
-                        <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center>
-                          {item}
-                        </TextDefault>
-                      </View>
-                    ))}
-                  </>
-                ))}
+              {draw && (
+                <>
+                  {draw.balls.filter(Boolean).map((item, index) => (
+                    <View style={[styles.ballContainer, { backgroundColor: colors.yellow }]} key={index}>
+                      <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center>
+                        {item}
+                      </TextDefault>
+                    </View>
+                  ))}
+                  {draw.specialBalls.filter(Boolean).map((item, index) => (
+                    <View style={[styles.ballContainer, { backgroundColor: colors.green }]} key={index}>
+                      <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center>
+                        {item}
+                      </TextDefault>
+                    </View>
+                  ))}
+                </>
+              )}
             </View>
           </View>
           <Pressable onPress={handleViewAll} android_ripple={ripple} style={buttonStyle}>

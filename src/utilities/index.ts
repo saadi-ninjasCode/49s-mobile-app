@@ -8,7 +8,6 @@ import {
   dateTransformation,
   getTime,
   getZone,
-  ballsTransformation,
 } from './stringManipulation';
 import { textStyles } from './textStyles';
 import { timeDifference } from './time';
@@ -25,7 +24,6 @@ export {
   getTime,
   getZone,
   isSameDay,
-  ballsTransformation,
   nextDrawTimestamp,
   todaysDrawTimestamp,
   scale,

@@ -1,21 +1,31 @@
 import { getApp } from "@react-native-firebase/app";
 import {
   collection,
-  doc,
-  getDoc,
   getDocs,
   getFirestore,
+  initializeFirestore,
   limit,
   onSnapshot,
   orderBy,
   query,
-  type QueryDocumentSnapshot,
-  startAfter,
   Timestamp,
   where,
 } from "@react-native-firebase/firestore";
+import type { SQLiteDatabase } from "expo-sqlite";
+import { getDB } from "./db/database";
+import * as drawsRepo from "./db/draws.repo";
+import * as drawTypesRepo from "./db/drawTypes.repo";
+import * as gamesRepo from "./db/games.repo";
 
 type Unsubscribe = () => void;
+
+const _app = getApp();
+
+// Disable Firestore's built-in offline cache — SQLite is now the canonical local
+// store. `initializeFirestore` configures the singleton; subsequent
+// `getFirestore` calls return the same instance. Re-init on Fast Refresh
+// rejects the returned promise, which we swallow.
+initializeFirestore(_app, { persistence: false }).catch(() => {});
 
 interface DrawTypeDoc {
   gameId: string;
@@ -32,10 +42,22 @@ interface DrawDoc {
   date: Timestamp;
   balls: number[];
   specialBalls: number[];
-  pending: boolean;
 }
 
-const db = () => getFirestore(getApp());
+interface GameDoc {
+  name: string;
+  icon_name?: string;
+  mainBallCount: number;
+  mainBallMax: number;
+  specialBallCount: number;
+  specialBallMax: number;
+  hotColdCount?: number;
+  hotBall?: BallStat[];
+  coldBall?: BallStat[];
+  updatedAt?: Timestamp;
+}
+
+const db = () => getFirestore(_app);
 
 const drawTypeFromDoc = (id: string, data: DrawTypeDoc): DrawType => ({
   _id: id,
@@ -44,7 +66,7 @@ const drawTypeFromDoc = (id: string, data: DrawTypeDoc): DrawType => ({
   icon_name: data.icon_name,
   hour: data.hour ?? 0,
   minute: data.minute ?? 0,
-  timeZone: data.timeZone ?? 'Europe/London',
+  timeZone: data.timeZone ?? "Europe/London",
 });
 
 const drawFromDoc = (id: string, data: DrawDoc): Draw => ({
@@ -54,183 +76,100 @@ const drawFromDoc = (id: string, data: DrawDoc): Draw => ({
   date: data.date.toMillis(),
   balls: data.balls,
   specialBalls: data.specialBalls,
-  pending: data.pending,
 });
 
-let gamesCache: Game[] | null = null;
-let drawTypesCache: DrawType[] | null = null;
+const gameFromDoc = (id: string, data: GameDoc): Game => ({
+  _id: id,
+  name: data.name,
+  icon_name: data.icon_name ?? "",
+  mainBallCount: data.mainBallCount,
+  mainBallMax: data.mainBallMax,
+  specialBallCount: data.specialBallCount,
+  specialBallMax: data.specialBallMax,
+  hotColdCount: data.hotColdCount,
+  hotBall: data.hotBall,
+  coldBall: data.coldBall,
+  serverUpdatedAt: data.updatedAt?.toMillis(),
+});
+
+const writeDrawToCache = (draw: Draw): void => {
+  drawsRepo.upsertDraws(getDB(), [draw]).catch(() => {});
+};
 
 export const fetchGames = async (): Promise<Game[]> => {
-  if (gamesCache) return gamesCache;
   const snap = await getDocs(collection(db(), "games"));
-  gamesCache = snap.docs.map((d) => ({ _id: d.id, ...(d.data() as Omit<Game, "_id">) }));
-  return gamesCache;
+  return snap.docs.map((d) => gameFromDoc(d.id, d.data() as GameDoc));
+};
+
+/**
+ * Pull only games whose server `updatedAt` is newer than the freshest local
+ * `serverUpdatedAt`. If no local rows have a baseline yet, fetch the whole
+ * collection. Errors are swallowed so a transient network failure during the
+ * dashboard sync doesn't crash the UI — local data simply stays as-is.
+ */
+const refreshGamesIfStale = async (sqlite: SQLiteDatabase): Promise<void> => {
+  try {
+    const localMax = await gamesRepo.getMaxServerUpdatedAt(sqlite);
+    const gamesRef = collection(db(), "games");
+    const q =
+      localMax == null
+        ? query(gamesRef)
+        : query(gamesRef, where("updatedAt", ">", Timestamp.fromMillis(localMax)));
+    const snap = await getDocs(q);
+    if (snap.empty) return;
+    const games = snap.docs.map((d) => gameFromDoc(d.id, d.data() as GameDoc));
+    await gamesRepo.upsertGames(sqlite, games);
+  } catch {
+    /* leave local cache untouched on failure */
+  }
 };
 
 export const fetchDrawTypes = async (): Promise<DrawType[]> => {
-  if (drawTypesCache) return drawTypesCache;
   const snap = await getDocs(collection(db(), "drawTypes"));
-  drawTypesCache = snap.docs
+  return snap.docs
     .map((d) => drawTypeFromDoc(d.id, d.data() as DrawTypeDoc))
     .sort((a, b) => a.hour - b.hour || a.minute - b.minute);
-  return drawTypesCache;
 };
 
-export type DashboardEvent =
-  | { type: "loading" }
-  | { type: "data"; entries: DashboardEntry[] }
-  | { type: "error"; error: Error };
-
-export const subscribeDashboard = (
-  cb: (event: DashboardEvent) => void,
-): Unsubscribe => {
+/**
+ * Mounts onSnapshot listeners (limit 1) per known drawType. Each event upserts
+ * the latest draw into SQLite — UI screens read from SQLite and re-render via
+ * `useDbChange('draws')`. There is no consumer callback; this is purely a
+ * write-through sync. Returns an unsubscribe that closes all listeners.
+ *
+ * Pre-condition: SQLite has drawType rows (bootstrap completed).
+ */
+export const startDashboardSync = (): Unsubscribe => {
   let cancelled = false;
   const unsubs: Unsubscribe[] = [];
 
-  cb({ type: "loading" });
-
   (async () => {
-    try {
-      const [games, drawTypes] = await Promise.all([fetchGames(), fetchDrawTypes()]);
-      if (cancelled) return;
+    const sqlite = getDB();
+    void refreshGamesIfStale(sqlite);
 
-      const gamesById = new Map(games.map((g) => [g._id, g]));
-      const latestByDrawType = new Map<string, Draw | null>();
-      const pendingInitial = new Set(drawTypes.map((dt) => dt._id));
+    const drawTypes = await drawTypesRepo.getAllDrawTypes(sqlite);
+    if (cancelled) return;
 
-      const emit = () => {
-        const entries: DashboardEntry[] = drawTypes.map((dt) => ({
-          game: gamesById.get(dt.gameId) ?? ({} as Game),
-          drawType: dt,
-          latestDraw: latestByDrawType.get(dt._id) ?? null,
-        }));
-        cb({ type: "data", entries });
-      };
-
-      if (drawTypes.length === 0) {
-        emit();
-        return;
-      }
-
-      const drawsRef = collection(db(), "draws");
-      drawTypes.forEach((dt) => {
-        const q = query(
-          drawsRef,
-          where("drawTypeId", "==", dt._id),
-          orderBy("date", "desc"),
-          limit(1),
-        );
-        const unsub = onSnapshot(
-          q,
-          (snap) => {
-            if (cancelled) return;
-            const docSnap = snap?.docs?.[0];
-            const draw = docSnap ? drawFromDoc(docSnap.id, docSnap.data() as DrawDoc) : null;
-            latestByDrawType.set(dt._id, draw);
-            pendingInitial.delete(dt._id);
-            if (pendingInitial.size === 0) emit();
-          },
-          (error) => {
-            if (cancelled) return;
-            cb({ type: "error", error });
-          },
-        );
-        unsubs.push(unsub);
+    const drawsRef = collection(db(), "draws");
+    drawTypes.forEach((dt) => {
+      const q = query(
+        drawsRef,
+        where("drawTypeId", "==", dt._id),
+        orderBy("date", "desc"),
+        limit(1),
+      );
+      const unsub = onSnapshot(q, (snap) => {
+        if (cancelled) return;
+        const docSnap = snap?.docs?.[0];
+        if (!docSnap) return;
+        writeDrawToCache(drawFromDoc(docSnap.id, docSnap.data() as DrawDoc));
       });
-    } catch (error) {
-      if (!cancelled) cb({ type: "error", error: error as Error });
-    }
+      unsubs.push(unsub);
+    });
   })();
 
   return () => {
     cancelled = true;
     unsubs.forEach((u) => u());
   };
-};
-
-export interface DrawsPageOptions {
-  pageSize?: number;
-  after?: QueryDocumentSnapshot<DrawDoc> | null;
-  date?: Date | null;
-}
-
-export interface DrawsPage {
-  draws: DrawWithContext[];
-  lastDoc: QueryDocumentSnapshot<DrawDoc> | null;
-  hasMore: boolean;
-}
-
-export const fetchDrawsPage = async (
-  drawTypeId: string,
-  options: DrawsPageOptions = {},
-): Promise<DrawsPage> => {
-  const pageSize = options.pageSize ?? 20;
-  const [games, drawTypes] = await Promise.all([fetchGames(), fetchDrawTypes()]);
-  const drawType = drawTypes.find((dt) => dt._id === drawTypeId);
-  const game = drawType ? games.find((g) => g._id === drawType.gameId) : undefined;
-  if (!drawType || !game) return { draws: [], lastDoc: null, hasMore: false };
-
-  const drawsRef = collection(db(), "draws");
-  let q;
-  if (options.date) {
-    const start = new Date(options.date);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
-    q = query(
-      drawsRef,
-      where("drawTypeId", "==", drawTypeId),
-      where("date", ">=", Timestamp.fromDate(start)),
-      where("date", "<", Timestamp.fromDate(end)),
-      orderBy("date", "desc"),
-      limit(1),
-    );
-  } else if (options.after) {
-    q = query(
-      drawsRef,
-      where("drawTypeId", "==", drawTypeId),
-      orderBy("date", "desc"),
-      startAfter(options.after),
-      limit(pageSize),
-    );
-  } else {
-    q = query(
-      drawsRef,
-      where("drawTypeId", "==", drawTypeId),
-      orderBy("date", "desc"),
-      limit(pageSize),
-    );
-  }
-
-  const snap = await getDocs(q);
-  const draws: DrawWithContext[] = snap.docs.map((d) => ({
-    ...drawFromDoc(d.id, d.data() as DrawDoc),
-    game,
-    drawType,
-  }));
-  const lastDoc = (snap.docs.at(-1) as QueryDocumentSnapshot<DrawDoc> | undefined) ?? null;
-  const hasMore = !options.date && snap.docs.length === pageSize;
-  return { draws, lastDoc, hasMore };
-};
-
-export type DrawsPageCursor = QueryDocumentSnapshot<DrawDoc>;
-
-export const fetchBallFrequency = async (): Promise<BallFrequencyData> => {
-  const games = await fetchGames();
-  const sections: BallFrequencySection[] = games
-    .filter((g) => (g.hotBall?.length ?? 0) > 0 || (g.coldBall?.length ?? 0) > 0)
-    .map((g) => ({
-      gameId: g._id,
-      name: g.name,
-      hotBall: g.hotBall ?? [],
-      coldBall: g.coldBall ?? [],
-    }));
-  return { sections };
-};
-
-export const getDeviceDocRef = (token: string) => doc(db(), "devices", token);
-
-export const readDeviceDoc = async (token: string) => {
-  const snap = await getDoc(getDeviceDocRef(token));
-  return snap.exists() ? snap.data() : null;
 };

@@ -1,10 +1,12 @@
 import { useTheme } from "@react-navigation/native";
+import { useSQLiteContext } from "expo-sqlite";
 import React, { useCallback, useEffect, useState } from "react";
 import { SectionList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EmptyView, ErrorView, LoadingView } from "../../components/ListState";
+import { EmptyView, LoadingView } from "../../components/ListState";
 import { TextDefault } from "../../components/Text";
-import { fetchBallFrequency } from "../../services/firestore";
+import { useDbChange } from "../../services/db/dbEvents";
+import * as gamesRepo from "../../services/db/games.repo";
 import { alignment } from "../../utilities";
 import { useStyles } from "./styles";
 
@@ -52,40 +54,37 @@ interface BallFrequencySectionItem {
   coldBall: BallStat[];
 }
 
+const gamesToData = (games: Game[]): BallFrequencyData => ({
+  sections: games
+    .filter((g) => (g.hotBall?.length ?? 0) > 0 || (g.coldBall?.length ?? 0) > 0)
+    .map((g) => ({
+      gameId: g._id,
+      name: g.name,
+      hotBall: g.hotBall ?? [],
+      coldBall: g.coldBall ?? [],
+    })),
+});
+
 function BallFrequency() {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
+  const db = useSQLiteContext();
   const [data, setData] = useState<BallFrequencyData | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
+
+  const reloadFromDb = useCallback(async () => {
+    const games = await gamesRepo.getAllGames(db);
+    setData(gamesToData(games));
+  }, [db]);
 
   useEffect(() => {
-    let cancelled = false;
-    setError(null);
-    fetchBallFrequency()
-      .then((result) => {
-        if (!cancelled) setData(result);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e as Error);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [retryKey]);
+    void reloadFromDb();
+  }, [reloadFromDb]);
+
+  useDbChange("games", reloadFromDb);
 
   const handleRetry = useCallback(() => {
-    setData(null);
-    setRetryKey((k) => k + 1);
-  }, []);
-
-  if (data === null && error) {
-    return (
-      <SafeAreaView edges={["bottom", "left", "right"]} style={[styles.flex, styles.mainBackground]}>
-        <ErrorView message="Couldn't load stats." onRetry={handleRetry} />
-      </SafeAreaView>
-    );
-  }
+    void reloadFromDb();
+  }, [reloadFromDb]);
 
   if (data === null) {
     return (
