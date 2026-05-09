@@ -3,12 +3,6 @@ import React from 'react';
 import { View } from 'react-native';
 import TextDefault from '../TextDefault/TextDefault';
 
-export interface TextErrorProps {
-  text: string;
-  textColor?: string;
-  mainColor?: string;
-}
-
 function TextError(props: TextErrorProps) {
   const { colors } = useTheme() as NavigationTheme;
   return (

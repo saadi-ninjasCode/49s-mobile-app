@@ -4,24 +4,6 @@ import { StyleSheet, Text, type StyleProp, type TextStyle } from 'react-native';
 import { textStyles } from '../../../utilities';
 import color from './styles';
 
-export interface TextDefaultProps {
-  textColor?: string;
-  bold?: boolean;
-  center?: boolean;
-  right?: boolean;
-  small?: boolean;
-  H1?: boolean;
-  H2?: boolean;
-  H3?: boolean;
-  H4?: boolean;
-  H5?: boolean;
-  uppercase?: boolean;
-  lineOver?: boolean;
-  numberOfLines?: number;
-  style?: StyleProp<TextStyle>;
-  children: React.ReactNode;
-}
-
 function TextDefault(props: TextDefaultProps) {
   const { colors } = useTheme() as NavigationTheme;
   const textColor = props.textColor ?? colors.text;

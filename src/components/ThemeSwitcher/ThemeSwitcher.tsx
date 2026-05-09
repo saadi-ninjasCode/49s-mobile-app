@@ -2,18 +2,12 @@ import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import React from "react";
 import { Pressable, View } from "react-native";
-import { useThemeMode, type ThemeMode } from "../../theme/theme";
+import { useThemeMode } from "../../theme/theme";
 import { scale } from "../../utilities";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
 
-interface Option {
-  mode: ThemeMode;
-  label: string;
-  renderIcon: (size: number, color: string) => React.ReactNode;
-}
-
-const OPTIONS: readonly Option[] = [
+const OPTIONS: ReadonlyArray<ThemeSwitcherOption> = [
   {
     mode: "system",
     label: "System",

@@ -7,14 +7,7 @@ import { useStyles } from "./styles";
 
 const PENDING_GRACE_MS = 2 * 60 * 60 * 1000;
 
-export interface CounterProps {
-  hour: number;
-  minute: number;
-  timeZone: string;
-  latestDrawDate: number | null;
-}
-
-function Counter({ hour, minute, timeZone, latestDrawDate }: Readonly<CounterProps>) {
+function Counter({ hour, minute, timeZone, latestDrawDate }: CounterProps) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const [timeLeft, setTimeLeft] = useState(() =>

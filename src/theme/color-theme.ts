@@ -39,6 +39,7 @@ const AppThemeDefinition = {
       facebook: COLORS.facebookBlue,
       activeColor: COLORS.mintGreen,
       checkBoxColor: COLORS.skyBlue,
+      scrim: COLORS.whiteAlpha10,
     },
   },
   Dark: {
@@ -78,6 +79,7 @@ const AppThemeDefinition = {
       facebook: COLORS.facebookBlue,
       activeColor: COLORS.mintGreen,
       checkBoxColor: COLORS.softViolet,
+      scrim: COLORS.whiteAlpha10,
     },
   },
 } as const satisfies { Light: NavigationTheme; Dark: NavigationTheme };

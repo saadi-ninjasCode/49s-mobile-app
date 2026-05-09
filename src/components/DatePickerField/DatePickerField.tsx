@@ -8,14 +8,6 @@ import { dateWithWeekday } from "../../utilities/date";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
 
-export interface DatePickerFieldProps {
-  value: Date | null;
-  onSelect: (date: Date) => void;
-  placeholder?: string;
-  maximumDate?: Date;
-  minimumDate?: Date;
-}
-
 function DatePickerField({
   value,
   onSelect,

@@ -29,8 +29,10 @@ export const COLORS = {
   whiteAlpha90: 'rgba(255, 255, 255, 0.9)',
   whiteAlpha20: 'rgba(255, 255, 255, 0.2)',
   whiteAlpha15: 'rgba(255, 255, 255, 0.15)',
+  whiteAlpha10: 'rgba(255, 255, 255, 0.1)',
   blackAlpha60: 'rgba(0, 0, 0, 0.6)',
   blackAlpha20: 'rgba(0, 0, 0, 0.2)',
+  blackAlpha10: 'rgba(0, 0, 0, 0.1)',
 
   switchBgLight: 'rgba(216, 216, 216, 0.4)',
   switchBgDark: 'rgba(80, 80, 80, 0.4)',

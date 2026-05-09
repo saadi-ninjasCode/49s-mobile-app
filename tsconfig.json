@@ -15,6 +15,8 @@
     "expo-env.d.ts"
   ],
   "files": [
-    "src/theme/Theme.d.ts"
+    "src/theme/Theme.d.ts",
+    "src/Types/components.d.ts",
+    "src/Types/screens.d.ts"
   ]
 }

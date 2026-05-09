@@ -4,12 +4,6 @@ import { Pressable, View } from 'react-native';
 import TextDefault from '../Text/TextDefault/TextDefault';
 import { useStyles } from './styles';
 
-export interface EmptyViewProps {
-  message?: string;
-  buttonLabel?: string;
-  onRetry?: () => void;
-}
-
 function EmptyView({
   message = 'No data available.',
   buttonLabel = 'Refresh',

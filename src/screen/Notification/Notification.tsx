@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNotificationPrefs } from "../../Lib/PushNotification/NotificationProvider";
 import * as NotificationService from "../../Lib/PushNotification/NotificationService";
 import { fetchDrawTypes } from "../../services/firestore";
-import NotificationCard from "./NotificationCard";
+import NotificationCard from "../../components/NotificationCard/NotificationCard";
 import { useStyles } from "./styles";
 
 function Notification() {

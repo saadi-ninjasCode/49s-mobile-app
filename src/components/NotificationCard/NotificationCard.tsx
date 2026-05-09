@@ -1,16 +1,10 @@
 import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import Checkbox from '../../components/Checkbox/Checkbox';
-import { TextDefault } from '../../components/Text';
 import { alignment } from '../../utilities';
+import Checkbox from '../Checkbox/Checkbox';
+import { TextDefault } from '../Text';
 import { useStyles } from './styles';
-
-export interface NotificationCardProps {
-  name: string;
-  checked: boolean;
-  onToggle: () => void;
-}
 
 function NotificationCard(props: NotificationCardProps) {
   const { colors } = useTheme() as NavigationTheme;

@@ -1,14 +1,15 @@
 import { useTheme } from "@react-navigation/native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, Switch, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Switch, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CountPill from "../../components/CountPill/CountPill";
+import TabPill from "../../components/TabPill/TabPill";
 import { TextDefault } from "../../components/Text";
 import { randomBalls, randomBoosterBall } from "../../utilities/draw";
 import { useStyles } from "./styles";
 
 type BallValue = number | "?";
 type Mode = "luckyDip" | "pick3";
-type Styles = ReturnType<typeof useStyles>;
 
 const PICK_3_COUNT = 3;
 const SPIN_INTERVAL_MS = 50;
@@ -19,78 +20,6 @@ const MAX_SLOTS = 7;
 function placeholders(count: number): BallValue[] {
   return Array.from({ length: count }, () => "?");
 }
-
-interface TabPillProps {
-  mode: Mode;
-  active: boolean;
-  disabled: boolean;
-  label: string;
-  activeColor: string;
-  inactiveColor: string;
-  styles: Styles;
-  onSelect: (mode: Mode) => void;
-}
-
-const TabPill = React.memo(function TabPill({
-  mode,
-  active,
-  disabled,
-  label,
-  activeColor,
-  inactiveColor,
-  styles,
-  onSelect,
-}: TabPillProps) {
-  const handlePress = useCallback(() => onSelect(mode), [onSelect, mode]);
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected: active, disabled }}
-      disabled={disabled}
-      onPress={handlePress}
-      style={[styles.tabPill, active && styles.tabPillActive]}
-    >
-      <TextDefault textColor={active ? activeColor : inactiveColor} bold center>
-        {label}
-      </TextDefault>
-    </Pressable>
-  );
-});
-
-interface CountPillProps {
-  value: number;
-  active: boolean;
-  disabled: boolean;
-  activeColor: string;
-  inactiveColor: string;
-  styles: Styles;
-  onSelect: (value: number) => void;
-}
-
-const CountPill = React.memo(function CountPill({
-  value,
-  active,
-  disabled,
-  activeColor,
-  inactiveColor,
-  styles,
-  onSelect,
-}: CountPillProps) {
-  const handlePress = useCallback(() => onSelect(value), [onSelect, value]);
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected: active, disabled }}
-      disabled={disabled}
-      onPress={handlePress}
-      style={[styles.countPill, active && styles.countPillActive]}
-    >
-      <TextDefault textColor={active ? activeColor : inactiveColor} bold>
-        {value}
-      </TextDefault>
-    </Pressable>
-  );
-});
 
 function Generator() {
   const { colors } = useTheme() as NavigationTheme;
@@ -182,7 +111,6 @@ function Generator() {
                 label="Lucky Dip"
                 activeColor={colors.headerBackground}
                 inactiveColor={colors.fontWhite}
-                styles={styles}
                 onSelect={onSelectMode}
               />
               <TabPill
@@ -192,7 +120,6 @@ function Generator() {
                 label="Pick 3"
                 activeColor={colors.headerBackground}
                 inactiveColor={colors.fontWhite}
-                styles={styles}
                 onSelect={onSelectMode}
               />
             </View>
@@ -211,7 +138,6 @@ function Generator() {
                       disabled={isGenerating}
                       activeColor={colors.headerBackground}
                       inactiveColor={colors.fontWhite}
-                      styles={styles}
                       onSelect={onSelectCount}
                     />
                   ))}

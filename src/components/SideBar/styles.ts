@@ -44,7 +44,7 @@ export const useStyles = () => {
         },
         logoContainer: {
           alignItems: 'center',
-          backgroundColor:"rgba(255,255,255,0.1)",
+          backgroundColor: colors.scrim,
           borderBottomColor: colors.sidebarDivider,
           borderBottomWidth: StyleSheet.hairlineWidth,
           paddingVertical: scale(20),

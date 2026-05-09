@@ -27,6 +27,7 @@ declare global {
       facebook: string;
       activeColor: string;
       checkBoxColor: string;
+      scrim: string;
     };
   };
 }

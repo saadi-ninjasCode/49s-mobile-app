@@ -53,17 +53,6 @@ export const useStyles = () => {
           width: '90%',
           ...alignment.MBmedium,
         },
-        tabPill: {
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingVertical: scale(10),
-          borderRadius: scale(8),
-          backgroundColor: 'transparent',
-        },
-        tabPillActive: {
-          backgroundColor: colors.fontWhite,
-        },
         controls: {
           width: '90%',
           ...alignment.MBmedium,
@@ -75,19 +64,6 @@ export const useStyles = () => {
           flexDirection: 'row',
           flexWrap: 'wrap',
           justifyContent: 'space-between',
-        },
-        countPill: {
-          width: scale(36),
-          height: scale(36),
-          borderRadius: scale(18),
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderWidth: scale(1),
-          borderColor: colors.fontWhite,
-          backgroundColor: 'transparent',
-        },
-        countPillActive: {
-          backgroundColor: colors.fontWhite,
         },
         switchRow: {
           flexDirection: 'row',

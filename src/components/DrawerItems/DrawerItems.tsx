@@ -2,29 +2,22 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { DrawerItem } from "@react-navigation/drawer";
 import { useTheme } from "@react-navigation/native";
 import React from "react";
-import { scale } from "../../../utilities";
-import { TextDefault } from "../../Text";
-import styles from "./styles";
+import { scale } from "../../utilities";
+import { TextDefault } from "../Text";
+import { useStyles } from "./styles";
 
 type FontAwesome5Glyph = React.ComponentProps<typeof FontAwesome5>["name"];
 
-export interface DrawerItemsProps {
-  name?: string;
-  icon: string;
-  text: string;
-  active?: boolean;
-  onPress: () => void;
-}
-
 function DrawerItems(props: DrawerItemsProps) {
   const { colors } = useTheme() as NavigationTheme;
+  const styles = useStyles();
   const isActive = props.active === true;
   return (
     <DrawerItem
       inactiveTintColor={colors.fontWhite}
       activeTintColor={colors.fontWhite}
       style={[
-        { marginVertical: 0, backgroundColor: "transparent" },
+        styles.itemBase,
         isActive && { backgroundColor: colors.drawerSelected },
       ]}
       onPress={props.onPress}

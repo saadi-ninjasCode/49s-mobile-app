@@ -26,7 +26,7 @@ export const useStyles = () => {
         },
         modalBackdrop: {
           flex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+          backgroundColor: colors.scrim,
           justifyContent: 'flex-end',
         },
         modalSheet: {

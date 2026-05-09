@@ -5,18 +5,12 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Image, View } from "react-native";
 import { useDbChange } from "../../services/db/dbEvents";
 import * as drawTypesRepo from "../../services/db/drawTypes.repo";
-import { DrawerItems } from "../Drawer";
+import DrawerItems from "../DrawerItems/DrawerItems";
 import { TextDefault } from "../Text";
 import { ThemeSwitcher } from "../ThemeSwitcher";
 import { useStyles } from "./styles";
 
 const LOGO_SOURCE = require("../../../assets/images/logo-image.png");
-
-interface MenuConfig {
-  title: string;
-  icon: string;
-  navigateTo: string;
-}
 
 const Home: MenuConfig = { title: "Home", icon: "home", navigateTo: "index" };
 const TopMenus: MenuConfig[] = [
@@ -29,7 +23,7 @@ const BottomMenu: MenuConfig[] = [
   { title: "Privacy Policy", icon: "file-signature", navigateTo: "privacy" },
 ];
 
-function SideBar(props: DrawerContentComponentProps) {
+function SideBar(props: Readonly<DrawerContentComponentProps>) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const db = useSQLiteContext();

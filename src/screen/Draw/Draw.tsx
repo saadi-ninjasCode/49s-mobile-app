@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import DatePickerField from "../../components/DatePickerField/DatePickerField";
 import DrawCard from "../../components/DrawCard/DrawCard";
 import { EmptyView, ErrorView, FooterLoader, LoadingView } from "../../components/ListState";
+import Separator from "../../components/Separator/Separator";
 import { TextDefault } from "../../components/Text";
 import { useDbChange } from "../../services/db/dbEvents";
 import * as drawsRepo from "../../services/db/draws.repo";
@@ -21,17 +22,7 @@ import {
 import { scale } from "../../utilities";
 import { useStyles } from "./styles";
 
-export interface DrawProps {
-  gameId?: string | null;
-  drawTypeId?: string | null;
-}
-
 const drawKeyExtractor = (item: DrawWithContext) => item._id;
-
-function Separator() {
-  const styles = useStyles();
-  return <View style={styles.separator} />;
-}
 
 function useDrawTypeContext(drawTypeId: string | null | undefined) {
   const db = useSQLiteContext();

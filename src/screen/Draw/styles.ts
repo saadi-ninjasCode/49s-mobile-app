@@ -16,7 +16,6 @@ export const useStyles = () => {
           ...alignment.PTlarge,
           ...alignment.PBlarge,
         },
-        separator: { ...alignment.MTmedium },
         headerStyles: {
           ...alignment.MBmedium,
         },

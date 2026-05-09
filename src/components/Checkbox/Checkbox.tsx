@@ -1,14 +1,9 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 import React from 'react';
-import { TouchableOpacity, type GestureResponderEvent } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { scale } from '../../utilities';
 import { useStyles } from './styles';
-
-export interface CheckboxProps {
-  checked: boolean;
-  onPress?: (event: GestureResponderEvent) => void;
-}
 
 function Checkbox(props: CheckboxProps) {
   const { colors } = useTheme() as NavigationTheme;

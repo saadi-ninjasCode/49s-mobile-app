@@ -4,12 +4,6 @@ import { Pressable, View } from 'react-native';
 import TextDefault from '../Text/TextDefault/TextDefault';
 import { useStyles } from './styles';
 
-export interface ErrorViewProps {
-  message?: string;
-  buttonLabel?: string;
-  onRetry: () => void;
-}
-
 function ErrorView({
   message = 'Something went wrong.',
   buttonLabel = 'Try again',

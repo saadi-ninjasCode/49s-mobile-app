@@ -2,12 +2,6 @@ import { useTheme } from '@react-navigation/native';
 import React from 'react';
 import { ActivityIndicator } from 'react-native';
 
-export interface SpinnerProps {
-  backColor?: string;
-  spinnerColor?: string;
-  size?: 'small' | 'large';
-}
-
 function Spinner(props: SpinnerProps) {
   const { colors } = useTheme() as NavigationTheme;
   return (
