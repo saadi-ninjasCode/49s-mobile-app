@@ -10,13 +10,15 @@ function BootSplash() {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const onLayout = useCallback(() => {
-    SplashScreen.hideAsync().catch(() => {});
+    setTimeout(() => {
+      SplashScreen.hideAsync().catch(() => {});
+    }, 200);
   }, []);
 
   return (
     <View style={styles.container} onLayout={onLayout}>
       <Image source={LOGO} style={styles.logo} resizeMode="contain" />
-      <ActivityIndicator size="large" color={colors.fontWhite} style={styles.spinner} />
+      <ActivityIndicator size="small" color={colors.fontWhite} style={styles.spinner} />
     </View>
   );
 }

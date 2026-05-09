@@ -24,9 +24,14 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.sameet.uk49sresults",
       "googleServicesFile": "./google-services.json",
-      "permissions": ["android.permission.POST_NOTIFICATIONS"]
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "plugins": [
       "expo-router",
       [
@@ -54,26 +59,33 @@
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
-      // "./plugins/withFirebaseStaticPodfile",
       [
         "expo-build-properties",
         {
           "ios": {
             "useFrameworks": "static",
-            "forceStaticLinking": ["RNFBApp", "RNFBFirestore", "RNFBMessaging"]
+            "forceStaticLinking": [
+              "RNFBApp",
+              "RNFBFirestore",
+              "RNFBMessaging"
+            ]
           },
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
             "useLegacyPackaging": true,
-            "buildArchs": ["arm64-v8a", "armeabi-v7a"]
+            "buildArchs": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ]
           }
         }
       ],
       "./plugins/withApkSizeTweaks",
       "./plugins/withReleaseSigning",
       "./plugins/withNotificationIcon",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

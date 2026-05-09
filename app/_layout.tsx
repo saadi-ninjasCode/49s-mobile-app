@@ -4,11 +4,10 @@ import { Drawer } from "expo-router/drawer";
 import * as SplashScreen from "expo-splash-screen";
 import { SQLiteProvider } from "expo-sqlite";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import BootSplash from "../src/components/BootSplash";
-import { ErrorView } from "../src/components/ListState";
 import SideBar from "../src/components/SideBar/SideBar";
 import { NotificationPrefsProvider } from "../src/Lib/PushNotification/NotificationProvider";
 import * as NotificationService from "../src/Lib/PushNotification/NotificationService";
@@ -22,27 +21,21 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 const renderDrawerContent = (props: DrawerContentComponentProps) => <SideBar {...props} />;
 
 function AppBoot({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-
-  const run = useCallback(async () => {
-    setStatus("loading");
-    try {
-      await bootstrap();
-      setStatus("ready");
-      void backgroundRefresh();
-    } catch {
-      setStatus("error");
-    }
-  }, []);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    void run();
-  }, [run]);
+    (async () => {
+      try {
+        await bootstrap();
+        backgroundRefresh().catch(() => {});
+      } catch (e) {
+        console.warn("[AppBoot] bootstrap failed; continuing to app:", e);
+      }
+      setReady(true);
+    })();
+  }, []);
 
-  if (status === "loading") return <BootSplash />;
-  if (status === "error") {
-    return <ErrorView message="Couldn't load the latest results. Check your connection and try again." onRetry={run} />;
-  }
+  if (!ready) return <BootSplash />;
   return <>{children}</>;
 }
 

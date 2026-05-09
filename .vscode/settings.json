@@ -4,5 +4,5 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
-  "cSpell.words": ["brunchtime", "drivetime", "Notifee", "prefs"]
+  "cSpell.words": ["brunchtime", "drivetime", "Firestore", "Notifee", "prefs"]
 }

@@ -180,6 +180,40 @@ Shadow colors follow a **split-opacity** pattern: the raw color has no alpha, an
    ```
 4. **Text shadows** are the exception — React Native has no `textShadowOpacity`, so `textShadowColor` may include alpha (e.g. `rgba(0, 0, 0, 0.25)`).
 
+## 8. Sizing — `scale()` and `alignment.*`
+
+Never use raw pixel numbers for `fontSize`, `padding*`, `margin*`, `width`, `height`, `borderRadius`, `borderWidth`. Two utilities cover the common cases:
+
+- **`scale(n)`** from [src/utilities/scaling.ts](../../src/utilities/scaling.ts) — proportionally scales a number to the device width relative to a 350pt baseline. Also exported: `verticalScale`, `moderateScale`. Use `scale()` for most dimensions.
+- **`alignment.*`** from [src/utilities/alignment.ts](../../src/utilities/alignment.ts) — pre-built `margin*` / `padding*` style objects in `xSmall`/`small`/`medium`/`large` sizes (e.g. `alignment.MTmedium`, `alignment.PRxSmall`). Spread them into `StyleSheet.create` entries.
+
+Existing example — see [src/components/MainCard/styles.ts](../../src/components/MainCard/styles.ts):
+
+```ts
+boxHeader: {
+  width: '80%',
+  height: scale(32),
+  borderWidth: scale(1),
+  borderRadius: 50,
+  // ...
+},
+boxInfo: {
+  ...alignment.MTmedium,
+  ...alignment.PTmedium,
+  ...alignment.PLxSmall,
+  ...alignment.PRxSmall,
+},
+```
+
+`borderRadius: 50` for fully-pill rounding is fine — it's a fixed-shape rule, not a sized dimension. But anything that should look right across screen sizes goes through `scale()`.
+
+## 9. Fonts
+
+- Body / display text uses the `Outfit` family registered in [src/theme/fonts.ts](../../src/theme/fonts.ts) — read from `Outfit.*` (`Outfit.regular`, `Outfit.medium`, `Outfit.bold`). Don't hardcode font family strings in component or style files.
+- **Never combine `fontFamily: "Outfit-Medium"` with `fontWeight: "500"`** on the same text. iOS silently overrides the family when both are present — pick one (always pick the family).
+- Match the design's weight exactly. If the spec says regular, use `Outfit.regular`. Don't default up to `medium` / `bold` for "looks better" reasons.
+- New font variants: drop the `.ttf` under [assets/](../../assets/) (create `assets/fonts/` if it doesn't exist yet — currently only `assets/images/` is present), register via `useFonts({...})` at app root, then add to `Outfit` (or a new family object) in [src/theme/fonts.ts](../../src/theme/fonts.ts).
+
 ## Summary
 
 | Concern | Approach |
@@ -190,3 +224,14 @@ Shadow colors follow a **split-opacity** pattern: the raw color has no alpha, an
 | Theme object | React Navigation `DefaultTheme` / `DarkTheme` extended in `color-theme.ts`. |
 | Consumption | `useStyles()` hook in style files using `useTheme() as NavigationTheme`. No raw COLORS in UI. |
 | Expo | `userInterfaceStyle: "automatic"` in `app.json`. |
+
+## Do NOT
+
+- Hardcode hex / `rgba()` / font family strings in components or style files.
+- Reference raw `COLORS` in UI code — go through `useTheme()` + semantic keys.
+- Use `style={{ color: colors.text }}` inline — define a named style and reference it.
+- Import `colors` from [src/utilities/](../../src/utilities/) — that file is a deprecated shim slated for removal.
+- Use raw pixel numbers for `fontSize`, `padding*`, `margin*`, `width`, `height`, `borderWidth`. Use `scale()` and `alignment.*`.
+- Mix `fontFamily: "Outfit-Medium"` with `fontWeight: "500"` on the same text.
+- Bake alpha into `shadowColor`. Use opaque color + `shadowOpacity`. Exception: `textShadowColor`.
+- Use NativeWind / Tailwind / shadcn / styled-components. This project is pure `StyleSheet` + theme.
