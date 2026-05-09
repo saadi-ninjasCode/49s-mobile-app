@@ -41,6 +41,11 @@ How Firestore is structured for this app, and the conventions to follow when add
   - `specialBallMax: number`
   - `hotBall: { ball: number; times: number }[]`
   - `coldBall: { ball: number; times: number }[]`
+  - `updatedAt: Timestamp` — see write invariant below
+
+#### Write invariant
+
+Every server-side write to `games/{id}` **must** include `updatedAt: serverTimestamp()` (or a server-monotonic equivalent). The client's delta-sync (`refreshGamesIfStale` in [src/services/firestore.ts](../../src/services/firestore.ts)) uses `where("updatedAt", ">", localMax)`; docs missing `updatedAt` are silently skipped by Firestore, and non-monotonic timestamps cause clients to miss updates. Treat `updatedAt` as part of the write contract, not a derived field.
 
 ### `drawTypes`
 
@@ -102,3 +107,4 @@ Rule: paths alternate `collection / doc / collection / …`. `collection(...)` e
 - ❌ Storing the doc ID inside the doc's own fields (e.g. `{ _id: "lunchtime", ... }`). It's already the key.
 - ❌ Querying for a doc whose ID you already know — read it directly with `getDoc(doc(...))`.
 - ❌ Re-enabling Firestore's offline persistence without removing the SQLite mirror first — the two caches will diverge.
+- ❌ Writing to `games/{id}` without bumping `updatedAt: serverTimestamp()`. Breaks the client's delta watermark.
