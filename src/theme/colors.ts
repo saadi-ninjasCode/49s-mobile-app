@@ -8,6 +8,7 @@ export const COLORS = {
   darkBorder: '#2D2A40',
 
   deepIndigo: 'rgb(34, 25, 119)',
+  splashIndigo: '#253779',
   softViolet: '#A599FF',
   skyBlue: 'rgb(78, 142, 237)',
 

@@ -1,12 +1,14 @@
 import type { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { ThemeProvider } from "@react-navigation/native";
-import { SQLiteProvider } from "expo-sqlite";
 import { Drawer } from "expo-router/drawer";
+import * as SplashScreen from "expo-splash-screen";
+import { SQLiteProvider } from "expo-sqlite";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
-import { ErrorView, LoadingView } from "../src/components/ListState";
+import BootSplash from "../src/components/BootSplash";
+import { ErrorView } from "../src/components/ListState";
 import SideBar from "../src/components/SideBar/SideBar";
 import { NotificationPrefsProvider } from "../src/Lib/PushNotification/NotificationProvider";
 import * as NotificationService from "../src/Lib/PushNotification/NotificationService";
@@ -14,6 +16,8 @@ import { DB_NAME } from "../src/services/db/database";
 import { runMigrations } from "../src/services/db/migrations";
 import { backgroundRefresh, bootstrap } from "../src/services/sync/bootstrap";
 import { THEME, ThemeModeProvider, useThemeMode } from "../src/theme/theme";
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const renderDrawerContent = (props: DrawerContentComponentProps) => <SideBar {...props} />;
 
@@ -35,14 +39,9 @@ function AppBoot({ children }: Readonly<{ children: React.ReactNode }>) {
     void run();
   }, [run]);
 
-  if (status === "loading") return <LoadingView />;
+  if (status === "loading") return <BootSplash />;
   if (status === "error") {
-    return (
-      <ErrorView
-        message="Couldn't load the latest results. Check your connection and try again."
-        onRetry={run}
-      />
-    );
+    return <ErrorView message="Couldn't load the latest results. Check your connection and try again." onRetry={run} />;
   }
   return <>{children}</>;
 }

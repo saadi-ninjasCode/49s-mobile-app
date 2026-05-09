@@ -8,6 +8,7 @@ declare global {
       cartContainer: string;
       headerBackground: string;
       headerText: string;
+      splashBackground: string;
       drawerColor: string;
       drawerSelected: string;
       drawerTitleColor: string;
