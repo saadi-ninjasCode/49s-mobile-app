@@ -9,6 +9,7 @@ const MIGRATIONS: Migration[] = [
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         iconName TEXT,
+        slug TEXT,
         mainBallCount INTEGER,
         mainBallMax INTEGER,
         specialBallCount INTEGER,

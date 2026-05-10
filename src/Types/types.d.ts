@@ -1,5 +1,6 @@
 interface Game {
   _id: string;
+  slug?: string;
   name: string;
   icon_name: string;
   mainBallCount: number;

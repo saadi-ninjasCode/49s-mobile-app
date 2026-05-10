@@ -2,6 +2,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 
 interface GameRow {
   id: string;
+  slug: string | null;
   name: string;
   iconName: string | null;
   mainBallCount: number;
@@ -17,6 +18,7 @@ interface GameRow {
 
 const rowToGame = (r: GameRow): Game => ({
   _id: r.id,
+  slug: r.slug ?? undefined,
   name: r.name,
   icon_name: r.iconName ?? '',
   mainBallCount: r.mainBallCount,
@@ -52,9 +54,10 @@ export const upsertGames = async (
     for (const g of games) {
       await db.runAsync(
         `INSERT OR REPLACE INTO games
-         (id, name, iconName, mainBallCount, mainBallMax, specialBallCount, specialBallMax, hotBallJson, coldBallJson, hotColdCount, cachedAt, serverUpdatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, slug, name, iconName, mainBallCount, mainBallMax, specialBallCount, specialBallMax, hotBallJson, coldBallJson, hotColdCount, cachedAt, serverUpdatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         g._id,
+        g.slug ?? null,
         g.name,
         g.icon_name ?? null,
         g.mainBallCount,

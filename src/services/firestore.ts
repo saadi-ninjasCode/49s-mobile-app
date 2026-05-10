@@ -32,6 +32,7 @@ interface DrawTypeDoc {
 }
 
 interface GameDoc {
+  slug?: string;
   name: string;
   icon_name?: string;
   mainBallCount: number;
@@ -58,6 +59,7 @@ const drawTypeFromDoc = (id: string, data: DrawTypeDoc): DrawType => ({
 
 const gameFromDoc = (id: string, data: GameDoc): Game => ({
   _id: id,
+  slug: data.slug,
   name: data.name,
   icon_name: data.icon_name ?? "",
   mainBallCount: data.mainBallCount,
