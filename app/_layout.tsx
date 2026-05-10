@@ -25,6 +25,9 @@ function AppBoot({ children }: Readonly<{ children: React.ReactNode }>) {
 
   useEffect(() => {
     (async () => {
+      setTimeout(() => {
+        SplashScreen.hideAsync().catch(() => {});
+      }, 200);
       try {
         await bootstrap();
         backgroundRefresh().catch(() => {});
@@ -80,7 +83,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SQLiteProvider databaseName={DB_NAME} onInit={runMigrations}>
+      <SQLiteProvider databaseName={DB_NAME} onInit={runMigrations} options={{ enableChangeListener: true }}>
         <ThemeModeProvider>
           <NotificationPrefsProvider>
             <ThemedApp />

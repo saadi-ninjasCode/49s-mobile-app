@@ -1,6 +1,7 @@
+import { useTheme } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, type ListRenderItem, View } from "react-native";
+import { FlatList, type ListRenderItem, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyView, ErrorView, LoadingView } from "../../components/ListState";
 import MainCard from "../../components/MainCard/MainCard";
@@ -16,9 +17,11 @@ const renderItem: ListRenderItem<DashboardEntry> = ({ item }) => <MainCard {...i
 
 function Main() {
   const styles = useStyles();
+  const { colors } = useTheme() as NavigationTheme;
   const db = useSQLiteContext();
   const [entries, setEntries] = useState<DashboardEntry[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const reload = useCallback(async () => {
     try {
@@ -55,7 +58,26 @@ function Main() {
     void reload();
   }, [reload]);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshDashboard();
+    } finally {
+      await reload();
+      setRefreshing(false);
+    }
+  }, [reload]);
+
   const Separator = useCallback(() => <View style={styles.seperator} />, []);
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      tintColor={colors.spinnerColor}
+      colors={[colors.spinnerColor]}
+    />
+  );
 
   if (entries === null && error) {
     return (
@@ -91,6 +113,7 @@ function Main() {
         ItemSeparatorComponent={Separator}
         contentContainerStyle={styles.mainContainer}
         renderItem={renderItem}
+        refreshControl={refreshControl}
       />
     </SafeAreaView>
   );

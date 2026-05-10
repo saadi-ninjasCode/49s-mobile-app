@@ -5,6 +5,6 @@ export const DB_NAME = 'games49s.db';
 let _db: SQLite.SQLiteDatabase | null = null;
 
 export const getDB = (): SQLite.SQLiteDatabase => {
-  if (!_db) _db = SQLite.openDatabaseSync(DB_NAME);
+  if (!_db) _db = SQLite.openDatabaseSync(DB_NAME, { enableChangeListener: true });
   return _db;
 };

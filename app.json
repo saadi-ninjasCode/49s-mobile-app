@@ -12,7 +12,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sameet.uk49sresults",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "entitlements": {
+        "aps-environment": "development"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -24,14 +27,9 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.sameet.uk49sresults",
       "googleServicesFile": "./google-services.json",
-      "permissions": [
-        "android.permission.POST_NOTIFICATIONS"
-      ]
+      "permissions": ["android.permission.POST_NOTIFICATIONS"]
     },
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
     "plugins": [
       "expo-router",
       [
@@ -64,20 +62,13 @@
         {
           "ios": {
             "useFrameworks": "static",
-            "forceStaticLinking": [
-              "RNFBApp",
-              "RNFBFirestore",
-              "RNFBMessaging"
-            ]
+            "forceStaticLinking": ["RNFBApp", "RNFBFirestore", "RNFBMessaging", "RNFBAnalytics"]
           },
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
             "useLegacyPackaging": true,
-            "buildArchs": [
-              "arm64-v8a",
-              "armeabi-v7a"
-            ]
+            "buildArchs": ["arm64-v8a", "armeabi-v7a"]
           }
         }
       ],
