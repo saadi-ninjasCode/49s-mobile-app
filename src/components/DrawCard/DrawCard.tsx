@@ -1,19 +1,25 @@
 import { useTheme } from "@react-navigation/native";
 import React from "react";
 import { View } from "react-native";
-import { dateTransformation } from "../../utilities";
+import { alignment, formatDrawDateBothZones } from "../../utilities";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
 
 function DrawCard(props: Readonly<DrawWithContext>) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
+  const dual = formatDrawDateBothZones(props.date ?? null);
   return (
     <View style={styles.drawBox}>
       <View style={styles.boxContainer}>
         <TextDefault numberOfLines={1} textColor={colors.headerText} H5 bold>
-          {dateTransformation(props.date ?? null, true)}
+          {dual ? dual.deviceLocal : "-"}
         </TextDefault>
+        {dual && !dual.matchesLondonDate && (
+          <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
+            {`${dual.london} (Europe/London)`}
+          </TextDefault>
+        )}
         <View style={styles.ballRow}>
           {props.balls.filter(Boolean).map((item, index) => (
             <View style={[styles.ballContainer, { backgroundColor: colors.yellow }]} key={index}>

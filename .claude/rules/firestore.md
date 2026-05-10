@@ -66,7 +66,7 @@ Every server-side write to `games/{id}` **must** include `updatedAt: serverTimes
 - **Fields** (mirrored in the `DrawDocData` type at [src/services/sync/firestoreQueries.ts](../../src/services/sync/firestoreQueries.ts) and [src/services/sync/refreshDraws.ts](../../src/services/sync/refreshDraws.ts)):
   - `gameId: string`
   - `drawTypeId: string` — FK; queries filter on this
-  - `date: Timestamp` — the draw's scheduled instant, expressed as Europe/London local time (`hour`/`minute` from the drawType, on the day matching the ID's `YYYYMMDD`).
+  - `date: Timestamp` — a UTC instant; semantically it represents a London civil time (`hour`/`minute` from the drawType, on the day matching the ID's `YYYYMMDD`). Always project to `Europe/London` before comparing or displaying as a civil date/time.
   - `balls: number[]` — sorted ascending, unique
   - `specialBalls: number[]` — booster ball(s); excluded from `balls`
   - `pending: boolean`

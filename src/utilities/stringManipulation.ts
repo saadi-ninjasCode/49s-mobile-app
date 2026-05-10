@@ -1,5 +1,3 @@
-import { dateToCustom, dateToTime, dateToZone, dateWithWeekday } from './date';
-
 export const ballFrequencyTransformation = (balls: BallStat[]): string => {
   if (balls.length < 1) return 'None';
   const ballArr: string[] = new Array(balls.length).fill('-');
@@ -17,11 +15,3 @@ export const ballFrequencyTimeTransformation = (balls: BallStat[]): string => {
   });
   return timeArr.join(' , ');
 };
-
-export const dateTransformation = (date: number | null | undefined, weekday = false): string => {
-  if (!date) return '-';
-  return weekday ? dateWithWeekday(date) : dateToCustom(date);
-};
-
-export const getZone = (date: number | null | undefined): string => (date ? dateToZone(date) : '-');
-export const getTime = (date: number | null | undefined): string => (date ? dateToTime(date) : '-');

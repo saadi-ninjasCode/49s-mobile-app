@@ -27,6 +27,11 @@ interface Draw {
   _id: string;
   gameId: string;
   drawTypeId: string;
+  /**
+   * UTC instant (ms since epoch). Semantically a London civil time —
+   * always project to Europe/London before deriving a civil day/time.
+   * See .claude/rules/firestore.md (`draws` collection).
+   */
   date: number;
   balls: number[];
   specialBalls: number[];

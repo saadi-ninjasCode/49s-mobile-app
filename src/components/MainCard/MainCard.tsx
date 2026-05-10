@@ -3,7 +3,7 @@ import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useMemo } from "react";
 import { Pressable, View, type PressableStateCallbackType } from "react-native";
-import { alignment, dateTransformation, formatLocalDrawTime, getLocalTimeZone, scale } from "../../utilities";
+import { alignment, formatDrawDateBothZones, formatLocalDrawTime, getLocalTimeZone, scale } from "../../utilities";
 import Counter from "../Counter/Counter";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
@@ -35,6 +35,9 @@ function MainCard(props: Readonly<DashboardEntry>) {
     [styles],
   );
   const draw = props.latestDraw;
+  const dual = formatDrawDateBothZones(draw ? draw.date : null);
+  const deviceTz = getLocalTimeZone();
+  const showScheduleTimeRow = deviceTz !== props.drawType.timeZone;
   return (
     <View>
       <View style={styles.drawBox}>
@@ -47,14 +50,21 @@ function MainCard(props: Readonly<DashboardEntry>) {
         <View style={styles.boxContainer}>
           <View style={styles.boxInfo}>
             <TextDefault numberOfLines={1} textColor={colors.headerText} H5 bold style={alignment.MTxSmall}>
-              {dateTransformation(draw ? draw.date : null, true)}
+              {dual ? dual.deviceLocal : "-"}
             </TextDefault>
+            {dual && !dual.matchesLondonDate && (
+              <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
+                {`${dual.london} (Europe/London)`}
+              </TextDefault>
+            )}
             <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} style={alignment.MTxSmall}>
-              {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone)} (${getLocalTimeZone()})`}
+              {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone)} (${deviceTz})`}
             </TextDefault>
-            <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
-              {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone, props.drawType.timeZone)} (${props.drawType.timeZone})`}
-            </TextDefault>
+            {showScheduleTimeRow && (
+              <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
+                {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone, props.drawType.timeZone)} (${props.drawType.timeZone})`}
+              </TextDefault>
+            )}
             <View style={styles.ballRow}>
               {draw && (
                 <>

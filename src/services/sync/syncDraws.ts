@@ -1,3 +1,4 @@
+import { pickedDayAsLondon } from '../../utilities/date';
 import { getDB } from '../db/database';
 import * as drawsRepo from '../db/draws.repo';
 import {
@@ -44,17 +45,15 @@ export async function fetchDateFilter(
   dayMs: number,
 ): Promise<Draw | null> {
   const db = getDB();
-  const start = new Date(dayMs);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  const startMs = start.getTime();
-  const endMs = end.getTime();
+  // The picker showed the user a calendar day in their device tz; treat the
+  // displayed Y/M/D as a London civil day and bracket it with London-tz UTC
+  // bounds so we hit the right draw regardless of where the device runs.
+  const { rangeStartMs, rangeEndMs } = pickedDayAsLondon(new Date(dayMs));
 
-  const local = await drawsRepo.getDrawsForDay(db, drawTypeId, startMs, endMs);
+  const local = await drawsRepo.getDrawsForDay(db, drawTypeId, rangeStartMs, rangeEndMs);
   if (local[0]) return local[0];
 
-  const fetched = await queryDrawsForDay(drawTypeId, startMs, endMs);
+  const fetched = await queryDrawsForDay(drawTypeId, rangeStartMs, rangeEndMs);
   if (fetched.length === 0) return null;
   await drawsRepo.upsertDraws(db, fetched);
   return fetched[0];

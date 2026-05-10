@@ -13,6 +13,11 @@ import {
 interface DrawDocData {
   gameId: string;
   drawTypeId: string;
+  /**
+   * UTC instant (Firestore Timestamp). Semantically a London civil time —
+   * always project to Europe/London before deriving a civil day/time.
+   * See .claude/rules/firestore.md (`draws` collection).
+   */
   date: Timestamp;
   balls: number[];
   specialBalls: number[];

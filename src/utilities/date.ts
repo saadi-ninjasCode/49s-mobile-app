@@ -1,132 +1,28 @@
-type DateInput = number | string | Date | null | undefined;
+import { format } from 'date-fns';
+import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
 
-const toDate = (date: DateInput): Date => new Date(+(date as number));
+const LONDON_TZ = 'Europe/London';
 
-const customParts = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit',
-  hour12: false,
-});
+const pad2 = (n: number): string => String(n).padStart(2, '0');
 
-const weekdayParts = new Intl.DateTimeFormat('en-US', {
-  weekday: 'long',
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-});
-
-const timeFormatter = new Intl.DateTimeFormat('en-US', {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: true,
-});
-
-const londonTimeFormatter = new Intl.DateTimeFormat('en-US', {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: true,
-  timeZone: 'Europe/London',
-});
-
-const ordinal = (n: number): string => {
-  const v = n % 100;
-  if (v >= 11 && v <= 13) return `${n}th`;
-  switch (n % 10) {
-    case 1: return `${n}st`;
-    case 2: return `${n}nd`;
-    case 3: return `${n}rd`;
-    default: return `${n}th`;
-  }
+const civilDayInTz = (timeZone: string, daysOffset = 0): string => {
+  const today = formatInTimeZone(new Date(), timeZone, 'yyyy-MM-dd');
+  if (daysOffset === 0) return today;
+  const [y, m, d] = today.split('-').map(Number);
+  // Date.UTC handles month/year rollover; format the resulting UTC instant
+  // back to a civil date string in UTC (no tz drift on the +1 step).
+  const shifted = new Date(Date.UTC(y, m - 1, d + daysOffset));
+  return formatInTimeZone(shifted, 'UTC', 'yyyy-MM-dd');
 };
 
-const partValue = (parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string =>
-  parts.find((p) => p.type === type)?.value ?? '';
-
-export const dateToString = (date: DateInput): string => new Date(date as string | number | Date).toISOString();
-export const dateToLocal = (date: DateInput): string => new Date(date as string | number | Date).toLocaleString();
-export const dateTolocalDate = (date: DateInput): string => new Date(date as string | number | Date).toLocaleDateString();
-export const dateToCustom = (date: DateInput): string => {
-  const parts = customParts.formatToParts(toDate(date));
-  return `${partValue(parts, 'day')} ${partValue(parts, 'month')} ${partValue(parts, 'year')}, ${partValue(parts, 'hour')}:${partValue(parts, 'minute')}`;
-};
-export const dateWithWeekdayTime = (date: DateInput): string =>
-  new Date(+(date as number)).toLocaleDateString(undefined, {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZoneName: 'short',
-  });
-export const dateWithWeekday = (date: DateInput): string => {
-  const d = toDate(date);
-  const parts = weekdayParts.formatToParts(d);
-  return `${partValue(parts, 'weekday')}, ${partValue(parts, 'month')} ${ordinal(d.getDate())} ${partValue(parts, 'year')}`;
-};
-export const dateToZone = (date: DateInput): string => londonTimeFormatter.format(toDate(date));
-export const dateToTime = (date: DateInput): string => timeFormatter.format(toDate(date));
-
-const tzOffsetParts = (timeZone: string) =>
-  new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-  });
-
-const wallClockToUtc = (
-  y: number,
-  m: number,
-  d: number,
-  h: number,
-  min: number,
+const wallClockUtc = (
+  civilDate: string,
+  hour: number,
+  minute: number,
   timeZone: string,
 ): number => {
-  const utcGuess = Date.UTC(y, m - 1, d, h, min, 0);
-  const parts = tzOffsetParts(timeZone)
-    .formatToParts(new Date(utcGuess))
-    .reduce<Record<string, string>>((acc, p) => {
-      acc[p.type] = p.value;
-      return acc;
-    }, {});
-  const tzAsUtc = Date.UTC(
-    Number(parts.year),
-    Number(parts.month) - 1,
-    Number(parts.day),
-    Number(parts.hour),
-    Number(parts.minute),
-    Number(parts.second),
-  );
-  if (!Number.isFinite(tzAsUtc)) return Number.NaN;
-  const offset = tzAsUtc - utcGuess;
-  return utcGuess - offset;
-};
-
-const tzDateParts = (timeZone: string, ref: Date = new Date()) => {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-    .formatToParts(ref)
-    .reduce<Record<string, string>>((acc, p) => {
-      acc[p.type] = p.value;
-      return acc;
-    }, {});
-  return {
-    y: Number(parts.year),
-    m: Number(parts.month),
-    d: Number(parts.day),
-  };
+  const wall = `${civilDate}T${pad2(hour)}:${pad2(minute)}:00`;
+  return fromZonedTime(wall, timeZone).getTime();
 };
 
 export const todaysDrawTimestamp = (
@@ -135,9 +31,7 @@ export const todaysDrawTimestamp = (
   timeZone: string,
 ): number => {
   if (!Number.isFinite(hour) || !Number.isFinite(minute) || !timeZone) return Number.NaN;
-  const { y, m, d } = tzDateParts(timeZone);
-  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return Number.NaN;
-  return wallClockToUtc(y, m, d, hour, minute, timeZone);
+  return wallClockUtc(civilDayInTz(timeZone, 0), hour, minute, timeZone);
 };
 
 export const nextDrawTimestamp = (
@@ -148,16 +42,7 @@ export const nextDrawTimestamp = (
   const today = todaysDrawTimestamp(hour, minute, timeZone);
   if (!Number.isFinite(today)) return Number.NaN;
   if (today > Date.now()) return today;
-  const { y, m, d } = tzDateParts(timeZone);
-  const tomorrow = new Date(Date.UTC(y, m - 1, d + 1));
-  return wallClockToUtc(
-    tomorrow.getUTCFullYear(),
-    tomorrow.getUTCMonth() + 1,
-    tomorrow.getUTCDate(),
-    hour,
-    minute,
-    timeZone,
-  );
+  return wallClockUtc(civilDayInTz(timeZone, 1), hour, minute, timeZone);
 };
 
 export const formatLocalDrawTime = (
@@ -168,32 +53,83 @@ export const formatLocalDrawTime = (
 ): string => {
   const ts = nextDrawTimestamp(hour, minute, scheduleTimeZone);
   if (!Number.isFinite(ts)) return '—';
-  const opts: Intl.DateTimeFormatOptions = {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  };
-  if (displayTimeZone) opts.timeZone = displayTimeZone;
-  return new Intl.DateTimeFormat(undefined, opts).format(new Date(ts));
-};
-
-export const getLocalTimeZoneAbbr = (): string => {
-  const parts = new Intl.DateTimeFormat(undefined, {
-    timeZoneName: 'short',
-  }).formatToParts(new Date());
-  return partValue(parts, 'timeZoneName');
+  const d = new Date(ts);
+  return displayTimeZone
+    ? formatInTimeZone(d, displayTimeZone, 'h:mm a')
+    : format(d, 'h:mm a');
 };
 
 export const getLocalTimeZone = (): string =>
   Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-export const isSameDay = (a: DateInput, b: DateInput): boolean => {
-  if (a == null || b == null) return false;
-  const da = toDate(a);
-  const db = toDate(b);
-  return (
-    da.getFullYear() === db.getFullYear() &&
-    da.getMonth() === db.getMonth() &&
-    da.getDate() === db.getDate()
+export interface DrawDateDualZone {
+  london: string;
+  deviceLocal: string;
+  deviceTz: string;
+  /** true when the *civil date* coincides in both tz (no need to show both). */
+  matchesLondonDate: boolean;
+}
+
+const DATE_FORMAT = 'EEEE, MMMM do yyyy';
+const CIVIL_DATE_KEY = 'yyyy-MM-dd';
+
+/**
+ * Formats a draw's UTC instant as a *date* (no time) in both London civil tz
+ * and the user's device tz. Callers render the device-tz date as the primary
+ * line and only show the London line when `matchesLondonDate` is false (e.g.
+ * a London 23:30 draw that lands on the next civil day in eastern timezones).
+ * Time is rendered separately by the caller using the drawType's hour/minute.
+ */
+export const formatDrawDateBothZones = (
+  dateMs: number | null | undefined,
+): DrawDateDualZone | null => {
+  if (dateMs == null) return null;
+  const d = new Date(dateMs);
+  const deviceTz = getLocalTimeZone();
+  return {
+    london: formatInTimeZone(d, LONDON_TZ, DATE_FORMAT),
+    deviceLocal: formatInTimeZone(d, deviceTz, DATE_FORMAT),
+    deviceTz,
+    matchesLondonDate:
+      formatInTimeZone(d, LONDON_TZ, CIVIL_DATE_KEY) ===
+      formatInTimeZone(d, deviceTz, CIVIL_DATE_KEY),
+  };
+};
+
+export interface PickedLondonDay {
+  civilDate: string;
+  rangeStartMs: number;
+  rangeEndMs: number;
+  label: string;
+}
+
+/**
+ * Treats the calendar day visible in a date picker (returned by RN's
+ * DateTimePicker as a Date interpreted in device tz) as a *London* civil day,
+ * and produces the UTC bounds [start, end) that bracket that London day plus
+ * a label for display. This is what filter queries actually need — the user
+ * picked "May 10" on the calendar, they expect draws stored under London's
+ * May 10, regardless of the device tz.
+ */
+export const pickedDayAsLondon = (picked: Date): PickedLondonDay => {
+  const y = picked.getFullYear();
+  const m = picked.getMonth();
+  const d = picked.getDate();
+  // `fromZonedTime(Date, tz)` reads the Date's components in the *system* tz,
+  // not UTC — pass an explicit wall-clock string instead. Date.UTC handles
+  // month/year rollover for the +1-day end bound.
+  const civilDate = `${y}-${pad2(m + 1)}-${pad2(d)}`;
+  const nextCivilDate = formatInTimeZone(
+    new Date(Date.UTC(y, m, d + 1)),
+    'UTC',
+    'yyyy-MM-dd',
   );
+  const startUtc = fromZonedTime(`${civilDate}T00:00:00`, LONDON_TZ);
+  const endUtc = fromZonedTime(`${nextCivilDate}T00:00:00`, LONDON_TZ);
+  return {
+    civilDate,
+    rangeStartMs: startUtc.getTime(),
+    rangeEndMs: endUtc.getTime(),
+    label: formatInTimeZone(startUtc, LONDON_TZ, 'EEEE, MMMM do yyyy'),
+  };
 };

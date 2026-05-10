@@ -1,13 +1,17 @@
 import alignment from './alignment';
 import colors from './colors';
-import { formatLocalDrawTime, getLocalTimeZone, getLocalTimeZoneAbbr, isSameDay, nextDrawTimestamp, todaysDrawTimestamp } from './date';
+import {
+  formatDrawDateBothZones,
+  formatLocalDrawTime,
+  getLocalTimeZone,
+  nextDrawTimestamp,
+  pickedDayAsLondon,
+  todaysDrawTimestamp,
+} from './date';
 import { scale, verticalScale } from './scaling';
 import {
   ballFrequencyTimeTransformation,
   ballFrequencyTransformation,
-  dateTransformation,
-  getTime,
-  getZone,
 } from './stringManipulation';
 import { textStyles } from './textStyles';
 import { timeDifference } from './time';
@@ -17,14 +21,11 @@ export {
   ballFrequencyTimeTransformation,
   ballFrequencyTransformation,
   colors,
-  dateTransformation,
+  formatDrawDateBothZones,
   formatLocalDrawTime,
   getLocalTimeZone,
-  getLocalTimeZoneAbbr,
-  getTime,
-  getZone,
-  isSameDay,
   nextDrawTimestamp,
+  pickedDayAsLondon,
   todaysDrawTimestamp,
   scale,
   textStyles,

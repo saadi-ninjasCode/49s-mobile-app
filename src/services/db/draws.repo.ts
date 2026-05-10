@@ -4,6 +4,12 @@ interface DrawRow {
   id: string;
   gameId: string;
   drawTypeId: string;
+  /**
+   * UTC instant (ms since epoch, mirrored from Firestore). ORDER BY / range
+   * comparisons here are correct because they operate on the UTC instant; civil
+   * day/time derivations must project to Europe/London via date-fns-tz.
+   * See .claude/rules/firestore.md (`draws` collection).
+   */
   date: number;
   ballsJson: string;
   specialBallsJson: string;

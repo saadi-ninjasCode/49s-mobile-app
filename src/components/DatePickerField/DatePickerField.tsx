@@ -4,7 +4,7 @@ import { useTheme } from "@react-navigation/native";
 import React, { useCallback, useState } from "react";
 import { Modal, Platform, Pressable, View } from "react-native";
 import { scale } from "../../utilities";
-import { dateWithWeekday } from "../../utilities/date";
+import { pickedDayAsLondon } from "../../utilities/date";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
 
@@ -46,7 +46,7 @@ function DatePickerField({
     onSelect(staged);
   }, [onSelect, staged]);
 
-  const label = value ? dateWithWeekday(value.getTime()) : placeholder;
+  const label = value ? pickedDayAsLondon(value).label : placeholder;
   const labelColor = value ? colors.fontMainColor : colors.fontSecondColor;
 
   return (
