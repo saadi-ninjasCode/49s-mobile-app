@@ -45,6 +45,7 @@ export async function queryLatestDraws(
   const q = query(
     drawsRef,
     where('drawTypeId', '==', drawTypeId),
+    where('deletedAt', '==', null),
     orderBy('date', 'desc'),
     limit(max),
   );
@@ -64,6 +65,7 @@ export async function queryDrawsBefore(
   const q = query(
     drawsRef,
     where('drawTypeId', '==', drawTypeId),
+    where('deletedAt', '==', null),
     where('date', '<', Timestamp.fromMillis(beforeMs)),
     orderBy('date', 'desc'),
     limit(max),
@@ -84,6 +86,7 @@ export async function queryDrawsForDay(
   const q = query(
     drawsRef,
     where('drawTypeId', '==', drawTypeId),
+    where('deletedAt', '==', null),
     where('date', '>=', Timestamp.fromMillis(startMs)),
     where('date', '<', Timestamp.fromMillis(endMs)),
     orderBy('date', 'desc'),

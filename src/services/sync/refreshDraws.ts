@@ -39,20 +39,20 @@ export async function refreshDrawsIfStale(drawTypeId: string): Promise<void> {
   const db = getDB();
   const localMax = await drawsRepo.getMaxServerUpdatedAt(db, drawTypeId);
   const drawsRef = collection(fdb(), 'draws');
-
   const q =
     localMax == null
       ? query(
-          drawsRef,
-          where('drawTypeId', '==', drawTypeId),
-          orderBy('date', 'desc'),
-          limit(PAGE_SIZE),
-        )
+        drawsRef,
+        where('drawTypeId', '==', drawTypeId),
+        where('deletedAt', '==', null),
+        orderBy('date', 'desc'),
+        limit(PAGE_SIZE),
+      )
       : query(
-          drawsRef,
-          where('drawTypeId', '==', drawTypeId),
-          where('updatedAt', '>', Timestamp.fromMillis(localMax)),
-        );
+        drawsRef,
+        where('drawTypeId', '==', drawTypeId),
+        where('updatedAt', '>', Timestamp.fromMillis(localMax)),
+      );
 
   const snap = await getDocs(q);
   if (snap.empty) return;
