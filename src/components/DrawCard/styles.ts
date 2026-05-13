@@ -10,6 +10,8 @@ export const useStyles = () => {
       StyleSheet.create({
         font: {
           ...alignment.PxSmall,
+          includeFontPadding: false,
+          textAlignVertical: 'center',
         },
         drawBox: {
           backgroundColor: 'transparent',

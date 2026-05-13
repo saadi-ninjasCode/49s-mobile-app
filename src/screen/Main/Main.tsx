@@ -3,6 +3,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, type ListRenderItem, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DashboardDisclaimer from "../../components/DashboardDisclaimer/DashboardDisclaimer";
 import { EmptyView, ErrorView, LoadingView } from "../../components/ListState";
 import MainCard from "../../components/MainCard/MainCard";
 import { useDbChange } from "../../services/db/dbEvents";
@@ -114,6 +115,7 @@ function Main() {
         contentContainerStyle={styles.mainContainer}
         renderItem={renderItem}
         refreshControl={refreshControl}
+        ListFooterComponent={DashboardDisclaimer}
       />
     </SafeAreaView>
   );
