@@ -55,6 +55,17 @@ const MIGRATIONS: Migration[] = [
       );
     `);
   },
+  async (db) => {
+    // v2 — app preferences: age gate, ad-free unlocks, generator bonuses, consent cache.
+    // Single key/value table; see src/services/db/appPrefs.repo.ts for the typed API.
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS app_prefs (
+        key       TEXT PRIMARY KEY,
+        value     TEXT NOT NULL,
+        updatedAt INTEGER NOT NULL
+      );
+    `);
+  },
 ];
 
 export async function runMigrations(db: SQLiteDatabase): Promise<void> {
@@ -74,6 +85,7 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
 
 export async function resetDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync(`
+    DROP TABLE IF EXISTS app_prefs;
     DROP TABLE IF EXISTS drawType_pagination;
     DROP TABLE IF EXISTS draws;
     DROP TABLE IF EXISTS drawTypes;

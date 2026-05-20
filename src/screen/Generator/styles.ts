@@ -123,6 +123,13 @@ export const useStyles = () => {
         btnDisabled: {
           opacity: 0.6,
         },
+        bannerSlot: {
+          // `marginTop: 'auto'` pushes the banner to the bottom of the
+          // SafeAreaView; the paddingTop is the accidental-click guard
+          // between the Generate button and the banner (AdMob policy).
+          marginTop: 'auto',
+          ...alignment.PTlarge,
+        },
       }),
     [colors],
   );

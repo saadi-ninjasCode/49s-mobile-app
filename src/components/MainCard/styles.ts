@@ -73,6 +73,7 @@ export const useStyles = () => {
           borderWidth: scale(1),
           borderColor: colors.headerText,
           borderRadius: scale(20),
+          overflow: 'hidden',
           paddingVertical: scale(6),
           paddingHorizontal: scale(14),
           ...alignment.MTlarge,

@@ -1,12 +1,14 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, type ListRenderItem, Pressable, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AdBannerSlot from "../../components/AdBannerSlot/AdBannerSlot";
 import DatePickerField from "../../components/DatePickerField/DatePickerField";
 import DrawCard from "../../components/DrawCard/DrawCard";
 import { EmptyView, ErrorView, FooterLoader, LoadingView } from "../../components/ListState";
+import NativeAdCardCompact from "../../components/NativeAdCardCompact/NativeAdCardCompact";
 import Separator from "../../components/Separator/Separator";
 import { TextDefault } from "../../components/Text";
 import { useDbChange } from "../../services/db/dbEvents";
@@ -22,7 +24,25 @@ import {
 import { scale } from "../../utilities";
 import { useStyles } from "./styles";
 
-const drawKeyExtractor = (item: DrawWithContext) => item._id;
+// Inject a native ad slot after every 6th draw (positions 5, 11, 17, ...).
+// Keeps density low enough that the list still reads as a results history,
+// not an ad feed.
+const AD_SLOT_INTERVAL = 6;
+
+const buildDrawList = (drawItems: DrawWithContext[]): DrawListItem[] => {
+  const result: DrawListItem[] = [];
+  let adIndex = 0;
+  for (let i = 0; i < drawItems.length; i++) {
+    result.push({ kind: "draw", draw: drawItems[i], drawIndex: i });
+    if (i % AD_SLOT_INTERVAL === AD_SLOT_INTERVAL - 1) {
+      result.push({ kind: "ad", slotId: `draw-ad-${adIndex++}` });
+    }
+  }
+  return result;
+};
+
+const drawKeyExtractor = (item: DrawListItem): string =>
+  item.kind === "draw" ? item.draw._id : item.slotId;
 
 function useDrawTypeContext(drawTypeId: string | null | undefined) {
   const db = useSQLiteContext();
@@ -205,7 +225,11 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
         maximumDate={new Date()}
       />
       {isFiltering && (
-        <Pressable onPress={handleClear} style={clearButtonStyle}>
+        <Pressable
+          onPress={handleClear}
+          android_ripple={{ color: colors.drawerSelected, foreground: true }}
+          style={clearButtonStyle}
+        >
           <FontAwesome5 name="times" size={scale(12)} color={colors.brandAccent} />
           <TextDefault textColor={colors.brandAccent} bold>
             {"Clear"}
@@ -215,22 +239,29 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
     </View>
   );
 
-  const renderItem = useCallback<ListRenderItem<DrawWithContext>>(
-    ({ item, index }) => {
+  const renderItem = useCallback<ListRenderItem<DrawListItem>>(
+    ({ item }) => {
+      if (item.kind === "ad") {
+        return <NativeAdCardCompact slotId={item.slotId} />;
+      }
+
+      // Header decisions are based on the draw's position in the underlying
+      // result list (`drawIndex`), NOT the FlatList index — ad slots shift
+      // the FlatList index but not the meaning of "first / second result".
       const headers = [];
-      if (index === 0 && draws.length === 1) {
+      if (item.drawIndex === 0 && draws.length === 1) {
         headers.push(
           <TextDefault key={"title"} textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
             {"Results"}
           </TextDefault>,
         );
-      } else if (index === 0 && draws.length > 1) {
+      } else if (item.drawIndex === 0 && draws.length > 1) {
         headers.push(
           <TextDefault key={"latest_title"} textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
             {"Latest Result"}
           </TextDefault>,
         );
-      } else if (index === 1 && draws.length > 2) {
+      } else if (item.drawIndex === 1 && draws.length > 2) {
         headers.push(
           <TextDefault key={"prev_title"} textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
             {"Previous Results"}
@@ -240,12 +271,14 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
       return (
         <>
           {headers}
-          <DrawCard {...item} />
+          <DrawCard {...item.draw} />
         </>
       );
     },
     [draws.length, colors.brandAccent, styles.headerStyles],
   );
+
+  const listData = useMemo<DrawListItem[]>(() => buildDrawList(draws), [draws]);
 
   const refreshControl = (
     <RefreshControl
@@ -286,8 +319,8 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.flex}>
-      <FlatList<DrawWithContext>
-        data={draws}
+      <FlatList<DrawListItem>
+        data={listData}
         showsVerticalScrollIndicator={false}
         keyExtractor={drawKeyExtractor}
         style={styles.flex}
@@ -300,6 +333,7 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
         ListFooterComponent={loadingMore ? FooterLoader : null}
         refreshControl={refreshControl}
       />
+      <AdBannerSlot placement="draw_bottom" />
     </SafeAreaView>
   );
 }

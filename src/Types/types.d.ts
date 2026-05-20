@@ -71,3 +71,19 @@ interface TimeLeft {
   minutes: number;
   seconds: number;
 }
+
+/**
+ * Device-local user preferences (SQLite `app_prefs` table — see migration v2).
+ * `null` means "not yet recorded"; quota fields default to the initial free
+ * allocation (see `FREE_ACTION_INITIAL` in `appPrefs.repo.ts`).
+ */
+interface AppPrefs {
+  readonly ageGateAccepted: boolean | null;
+  readonly ageGateDecidedAt: number | null;
+  readonly adFreeUntil: number | null;
+  readonly appOpenFreeUntil: number | null;
+  readonly consentStatusCache: string | null;
+  readonly canRequestAdsCache: boolean | null;
+  readonly generatorFreeSpins: number;
+  readonly drawFreeNavigations: number;
+}

@@ -28,6 +28,7 @@ declare global {
       activeColor: string;
       checkBoxColor: string;
       scrim: string;
+      modalBackdrop: string;
     };
   };
 }

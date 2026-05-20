@@ -35,6 +35,7 @@ export default function DrawRoute() {
             <Pressable
               onPress={handleBack}
               hitSlop={12}
+              android_ripple={{ color: colors.drawerSelected, foreground: true, borderless: true }}
               style={({ pressed }) => ({ paddingHorizontal: scale(12), opacity: pressed ? 0.6 : 1 })}
             >
               <FontAwesome5 name="arrow-left" size={scale(18)} color={colors.headerText} />

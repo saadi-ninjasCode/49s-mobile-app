@@ -19,6 +19,7 @@ function EmptyView({
       {onRetry && (
         <Pressable
           onPress={onRetry}
+          android_ripple={{ color: colors.drawerSelected, foreground: true }}
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
         >
           <TextDefault bold textColor={colors.fontWhite}>

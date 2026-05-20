@@ -35,6 +35,7 @@ export const useStyles = () => {
           borderWidth: scale(1),
           borderColor: colors.brandAccent,
           borderRadius: scale(8),
+          overflow: 'hidden',
           paddingVertical: scale(10),
           paddingHorizontal: scale(12),
         },

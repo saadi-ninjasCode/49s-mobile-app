@@ -30,6 +30,7 @@ export const useStyles = () => {
           justifyContent: 'center',
           paddingVertical: scale(10),
           borderRadius: scale(8),
+          overflow: 'hidden',
           backgroundColor: 'transparent',
         },
         pillActive: {

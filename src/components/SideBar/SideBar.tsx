@@ -13,14 +13,12 @@ import { useStyles } from "./styles";
 const LOGO_SOURCE = require("../../../assets/images/logo-image.png");
 
 const Home: MenuConfig = { title: "Home", icon: "home", navigateTo: "index" };
+// Notifications, Privacy Policy, and Terms & Conditions all live inside the
+// Settings screen now — they're no longer surfaced as top-level drawer items.
 const TopMenus: MenuConfig[] = [
-  { title: "Notifications", icon: "bell", navigateTo: "notification" },
   { title: "Hot & Cold", icon: "snowflake", navigateTo: "ballFrequency" },
   { title: "Number Generator", icon: "sync-alt", navigateTo: "generator" },
-];
-const BottomMenu: MenuConfig[] = [
-  { title: "Terms & Conditions", icon: "file-prescription", navigateTo: "condition" },
-  { title: "Privacy Policy", icon: "file-signature", navigateTo: "privacy" },
+  { title: "Settings", icon: "cog", navigateTo: "settings" },
 ];
 
 function SideBar(props: Readonly<DrawerContentComponentProps>) {
@@ -104,16 +102,6 @@ function SideBar(props: Readonly<DrawerContentComponentProps>) {
           </View>
           <View style={styles.bottomMenu}>
             <ThemeSwitcher />
-            {BottomMenu.map((item) => (
-              <DrawerItems
-                key={item.navigateTo}
-                name={item.navigateTo}
-                icon={item.icon}
-                text={item.title}
-                active={activeRouteName === item.navigateTo}
-                onPress={() => navigateAndClose(item.navigateTo)}
-              />
-            ))}
           </View>
         </View>
       </View>

@@ -51,7 +51,11 @@ function DatePickerField({
 
   return (
     <>
-      <Pressable onPress={openPicker} style={styles.field}>
+      <Pressable
+        onPress={openPicker}
+        android_ripple={{ color: colors.drawerSelected, foreground: true }}
+        style={styles.field}
+      >
         <TextDefault textColor={labelColor} style={styles.fieldText} numberOfLines={1}>
           {label}
         </TextDefault>

@@ -1,7 +1,12 @@
 import { addDatabaseChangeListener } from 'expo-sqlite';
 import { useEffect } from 'react';
 
-export type WatchedTable = 'games' | 'drawTypes' | 'draws' | 'drawType_pagination';
+export type WatchedTable =
+  | 'games'
+  | 'drawTypes'
+  | 'draws'
+  | 'drawType_pagination'
+  | 'app_prefs';
 
 export function subscribeDbChanges(
   table: WatchedTable,

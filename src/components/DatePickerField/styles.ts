@@ -17,6 +17,7 @@ export const useStyles = () => {
           borderWidth: scale(1),
           borderColor: colors.border,
           borderRadius: scale(8),
+          overflow: 'hidden',
           paddingVertical: scale(10),
           paddingHorizontal: scale(12),
           gap: scale(8),

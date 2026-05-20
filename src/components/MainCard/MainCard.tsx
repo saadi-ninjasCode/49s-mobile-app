@@ -1,8 +1,20 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useMemo } from "react";
+import { useSQLiteContext } from "expo-sqlite";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, View, type PressableStateCallbackType } from "react-native";
+import RewardedConfirmModal from "../RewardedConfirmModal/RewardedConfirmModal";
+import { useAdsConsent } from "../../services/ads/AdsConsentProvider";
+import { runRewardedAd } from "../../services/ads/rewarded";
+import { logAdRewardEarned } from "../../services/analytics/events";
+import {
+  consumeDrawFreeNavigation,
+  FREE_ACTION_REWARD,
+  getDrawFreeNavigations,
+  grantDrawFreeNavigations,
+} from "../../services/db/appPrefs.repo";
+import { useDbChange } from "../../services/db/dbEvents";
 import { alignment, formatDrawDateBothZones, formatLocalDrawTime, getLocalTimeZone, scale } from "../../utilities";
 import Counter from "../Counter/Counter";
 import { TextDefault } from "../Text";
@@ -14,6 +26,13 @@ function MainCard(props: Readonly<DashboardEntry>) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const router = useRouter();
+  const db = useSQLiteContext();
+  const { adsReady, canRequestAds } = useAdsConsent();
+
+  const [freeNavs, setFreeNavs] = useState<number | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [rewardedBusy, setRewardedBusy] = useState(false);
+
   const iconName = props.drawType.icon_name as FontAwesome5Glyph;
   const { gameId, drawTypeId, drawTypeName } = useMemo(
     () => ({
@@ -23,13 +42,84 @@ function MainCard(props: Readonly<DashboardEntry>) {
     }),
     [props.game._id, props.drawType._id, props.drawType.name],
   );
-  const handleViewAll = useCallback(() => {
+
+  // Read the persisted quota and re-read on any `app_prefs` change so the
+  // counter stays consistent across cards + Settings.
+  const reloadFreeNavs = useCallback(() => {
+    getDrawFreeNavigations(db)
+      .then(setFreeNavs)
+      .catch(() => setFreeNavs(null));
+  }, [db]);
+
+  useEffect(() => {
+    reloadFreeNavs();
+  }, [reloadFreeNavs]);
+
+  useDbChange("app_prefs", reloadFreeNavs);
+
+  const navigateToDraw = useCallback(() => {
     router.push({
       pathname: "/draw",
       params: { gameId, drawTypeId, name: drawTypeName, from: "card" },
     });
   }, [router, gameId, drawTypeId, drawTypeName]);
-  const ripple = useMemo(() => ({ color: colors.headerBackground }), [colors.headerBackground]);
+
+  const handleViewAll = useCallback(() => {
+    const remaining = freeNavs ?? 0;
+    const adsAvailable = adsReady && canRequestAds;
+
+    if (remaining > 0 || !adsAvailable) {
+      // Happy path: navigate immediately, decrement the quota in the background.
+      // If the SDK isn't ready (offline, consent pending) we let navigation
+      // through without consuming — refusing here would break the app for
+      // anyone who never got past the UMP flow.
+      navigateToDraw();
+      if (adsAvailable) {
+        void consumeDrawFreeNavigation(db);
+      }
+      return;
+    }
+
+    // Quota exhausted — surface the rewarded-ad gate.
+    setModalVisible(true);
+  }, [freeNavs, adsReady, canRequestAds, navigateToDraw, db]);
+
+  const handleRewardedCancel = useCallback(() => {
+    setModalVisible(false);
+  }, []);
+
+  const handleRewardedConfirm = useCallback(async () => {
+    setRewardedBusy(true);
+    try {
+      const result = await runRewardedAd({ db });
+      // Grant the reward on either a watched ad OR a load failure (no-fill,
+      // offline, network). Offline users shouldn't be stuck behind a gate
+      // they can't physically clear. Only a deliberate mid-ad dismiss skips
+      // the grant.
+      if (result.earned || result.loadFailed) {
+        await grantDrawFreeNavigations(db);
+        if (result.earned) {
+          logAdRewardEarned("draw_free_navigations", FREE_ACTION_REWARD);
+        }
+        // Consume one of the freshly-granted credits for this very tap so
+        // the user doesn't feel they "wasted" the ad — quota stays at +4.
+        await consumeDrawFreeNavigation(db);
+        navigateToDraw();
+      }
+      // result.earned=false && loadFailed=false → user dismissed mid-ad,
+      // no grant, no navigation.
+    } catch (e) {
+      if (__DEV__) console.warn("[MainCard] rewarded ad threw:", e);
+    } finally {
+      setRewardedBusy(false);
+      setModalVisible(false);
+    }
+  }, [db, navigateToDraw]);
+
+  const ripple = useMemo(
+    () => ({ color: colors.headerBackground, foreground: true }),
+    [colors.headerBackground],
+  );
   const buttonStyle = useCallback(
     ({ pressed }: PressableStateCallbackType) => [styles.viewAllButton, pressed && styles.viewAllButtonPressed],
     [styles],
@@ -100,6 +190,15 @@ function MainCard(props: Readonly<DashboardEntry>) {
           latestDrawDate={props.latestDraw?.date ?? null}
         />
       </View>
+
+      <RewardedConfirmModal
+        visible={modalVisible}
+        title="Out of free draw views"
+        rewardLabel={`${FREE_ACTION_REWARD} more draw views`}
+        busy={rewardedBusy}
+        onConfirm={handleRewardedConfirm}
+        onCancel={handleRewardedCancel}
+      />
     </View>
   );
 }

@@ -12,6 +12,7 @@ export const useStyles = () => {
           width: scale(36),
           height: scale(36),
           borderRadius: scale(18),
+          overflow: 'hidden',
           alignItems: 'center',
           justifyContent: 'center',
           borderWidth: scale(1),

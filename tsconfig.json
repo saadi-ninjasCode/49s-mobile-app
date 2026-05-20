@@ -17,6 +17,7 @@
   "files": [
     "src/theme/Theme.d.ts",
     "src/Types/components.d.ts",
-    "src/Types/screens.d.ts"
+    "src/Types/screens.d.ts",
+    "src/Types/ads.d.ts"
   ]
 }

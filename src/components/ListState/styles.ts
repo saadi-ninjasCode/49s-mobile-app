@@ -22,6 +22,7 @@ export const useStyles = () => {
           paddingVertical: scale(10),
           paddingHorizontal: scale(24),
           borderRadius: scale(8),
+          overflow: 'hidden',
         },
         pressed: {
           opacity: 0.7,

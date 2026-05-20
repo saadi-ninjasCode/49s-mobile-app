@@ -46,6 +46,7 @@ function ThemeSwitcher() {
               accessibilityState={{ selected: active }}
               accessibilityLabel={`${option.label} theme`}
               onPress={() => setMode(option.mode)}
+              android_ripple={{ color: colors.fontWhite, foreground: true }}
               style={[styles.pill, active && styles.pillActive]}
             >
               {option.renderIcon(scale(18), tint)}

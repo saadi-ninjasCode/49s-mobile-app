@@ -40,6 +40,7 @@ const AppThemeDefinition = {
       activeColor: COLORS.mintGreen,
       checkBoxColor: COLORS.skyBlue,
       scrim: COLORS.whiteAlpha10,
+      modalBackdrop: COLORS.blackAlpha60,
     },
   },
   Dark: {
@@ -80,6 +81,7 @@ const AppThemeDefinition = {
       activeColor: COLORS.mintGreen,
       checkBoxColor: COLORS.softViolet,
       scrim: COLORS.whiteAlpha10,
+      modalBackdrop: COLORS.blackAlpha60,
     },
   },
 } as const satisfies { Light: NavigationTheme; Dark: NavigationTheme };

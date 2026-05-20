@@ -1,10 +1,23 @@
 import { useTheme } from "@react-navigation/native";
+import { useSQLiteContext } from "expo-sqlite";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Switch, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AdBannerSlot from "../../components/AdBannerSlot/AdBannerSlot";
 import CountPill from "../../components/CountPill/CountPill";
+import RewardedConfirmModal from "../../components/RewardedConfirmModal/RewardedConfirmModal";
 import TabPill from "../../components/TabPill/TabPill";
 import { TextDefault } from "../../components/Text";
+import { useAdsConsent } from "../../services/ads/AdsConsentProvider";
+import { runRewardedAd } from "../../services/ads/rewarded";
+import { logAdRewardEarned } from "../../services/analytics/events";
+import {
+  consumeGeneratorFreeSpin,
+  FREE_ACTION_REWARD,
+  getGeneratorFreeSpins,
+  grantGeneratorFreeSpins,
+} from "../../services/db/appPrefs.repo";
+import { useDbChange } from "../../services/db/dbEvents";
 import { randomBalls, randomBoosterBall } from "../../utilities/draw";
 import { useStyles } from "./styles";
 
@@ -24,6 +37,8 @@ function placeholders(count: number): BallValue[] {
 function Generator() {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
+  const db = useSQLiteContext();
+  const { adsReady, canRequestAds } = useAdsConsent();
 
   const [mode, setMode] = useState<Mode>("luckyDip");
   const [mainCount, setMainCount] = useState<number>(5);
@@ -31,6 +46,10 @@ function Generator() {
   const [mainBalls, setMainBalls] = useState<BallValue[]>(placeholders(5));
   const [booster, setBooster] = useState<BallValue | null>("?");
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const [freeSpins, setFreeSpins] = useState<number | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [rewardedBusy, setRewardedBusy] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -64,7 +83,21 @@ function Generator() {
     setBooster(withBooster ? randomBoosterBall(numbers) : null);
   }, [count, withBooster]);
 
-  const generate = useCallback(() => {
+  // Action-quota state — re-read on every `app_prefs` change so the counter
+  // stays consistent with Settings (e.g. when a rewarded ad grants more spins).
+  const reloadFreeSpins = useCallback(() => {
+    getGeneratorFreeSpins(db)
+      .then(setFreeSpins)
+      .catch(() => setFreeSpins(null));
+  }, [db]);
+
+  useEffect(() => {
+    reloadFreeSpins();
+  }, [reloadFreeSpins]);
+
+  useDbChange("app_prefs", reloadFreeSpins);
+
+  const runSpin = useCallback(() => {
     if (isGenerating) return;
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -76,6 +109,56 @@ function Generator() {
       setIsGenerating(false);
     }, SPIN_DURATION_MS);
   }, [drawOnce, isGenerating]);
+
+  const generate = useCallback(() => {
+    if (isGenerating) return;
+    const remaining = freeSpins ?? 0;
+    const adsAvailable = adsReady && canRequestAds;
+
+    if (remaining > 0 || !adsAvailable) {
+      // Happy path: spin immediately, decrement the quota in the background.
+      // If the SDK isn't ready (offline, consent pending) we let the user
+      // spin without consuming — refusing would brick the screen for anyone
+      // who never made it past UMP.
+      if (adsAvailable) {
+        void consumeGeneratorFreeSpin(db);
+      }
+      runSpin();
+      return;
+    }
+
+    // Quota exhausted — surface the rewarded-ad gate.
+    setModalVisible(true);
+  }, [isGenerating, freeSpins, adsReady, canRequestAds, runSpin, db]);
+
+  const handleRewardedCancel = useCallback(() => {
+    setModalVisible(false);
+  }, []);
+
+  const handleRewardedConfirm = useCallback(async () => {
+    setRewardedBusy(true);
+    try {
+      const result = await runRewardedAd({ db });
+      // Grant on either a watched ad OR a load failure (no-fill, offline,
+      // network). Offline users shouldn't be stuck behind a gate they
+      // can't clear. Only a deliberate mid-ad dismiss skips the grant.
+      if (result.earned || result.loadFailed) {
+        await grantGeneratorFreeSpins(db);
+        if (result.earned) {
+          logAdRewardEarned("generator_free_spins", FREE_ACTION_REWARD);
+        }
+        // Consume one credit immediately so the user gets the spin they
+        // tapped for — net effect is +4 spins remaining.
+        await consumeGeneratorFreeSpin(db);
+        runSpin();
+      }
+    } catch (e) {
+      if (__DEV__) console.warn("[Generator] rewarded ad threw:", e);
+    } finally {
+      setRewardedBusy(false);
+      setModalVisible(false);
+    }
+  }, [db, runSpin]);
 
   const onSelectMode = useCallback(
     (next: Mode) => {
@@ -194,6 +277,18 @@ function Generator() {
           </View>
         </View>
       </View>
+      <View style={styles.bannerSlot}>
+        <AdBannerSlot placement="generator_bottom" />
+      </View>
+
+      <RewardedConfirmModal
+        visible={modalVisible}
+        title="Out of free spins"
+        rewardLabel={`${FREE_ACTION_REWARD} more spins`}
+        busy={rewardedBusy}
+        onConfirm={handleRewardedConfirm}
+        onCancel={handleRewardedCancel}
+      />
     </SafeAreaView>
   );
 }

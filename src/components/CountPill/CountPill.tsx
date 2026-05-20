@@ -1,3 +1,4 @@
+import { useTheme } from "@react-navigation/native";
 import React, { useCallback } from "react";
 import { Pressable } from "react-native";
 import { TextDefault } from "../Text";
@@ -11,6 +12,7 @@ function CountPill({
   inactiveColor,
   onSelect,
 }: CountPillProps) {
+  const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const handlePress = useCallback(() => onSelect(value), [onSelect, value]);
   return (
@@ -19,6 +21,7 @@ function CountPill({
       accessibilityState={{ selected: active, disabled }}
       disabled={disabled}
       onPress={handlePress}
+      android_ripple={{ color: colors.drawerSelected, foreground: true }}
       style={[styles.countPill, active && styles.countPillActive]}
     >
       <TextDefault textColor={active ? activeColor : inactiveColor} bold>

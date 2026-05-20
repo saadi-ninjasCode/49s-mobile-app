@@ -1,3 +1,4 @@
+import { useTheme } from "@react-navigation/native";
 import React, { useCallback } from "react";
 import { Pressable } from "react-native";
 import { TextDefault } from "../Text";
@@ -12,6 +13,7 @@ function TabPill({
   inactiveColor,
   onSelect,
 }: TabPillProps) {
+  const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const handlePress = useCallback(() => onSelect(mode), [onSelect, mode]);
   return (
@@ -20,6 +22,7 @@ function TabPill({
       accessibilityState={{ selected: active, disabled }}
       disabled={disabled}
       onPress={handlePress}
+      android_ripple={{ color: colors.drawerSelected, foreground: true }}
       style={[styles.tabPill, active && styles.tabPillActive]}
     >
       <TextDefault textColor={active ? activeColor : inactiveColor} bold center>

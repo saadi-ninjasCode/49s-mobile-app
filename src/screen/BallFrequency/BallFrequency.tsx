@@ -3,6 +3,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import React, { useCallback, useEffect, useState } from "react";
 import { SectionList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AdBannerSlot from "../../components/AdBannerSlot/AdBannerSlot";
 import Balls from "../../components/Balls/Balls";
 import { EmptyView, LoadingView } from "../../components/ListState";
 import { TextDefault } from "../../components/Text";
@@ -93,6 +94,7 @@ function BallFrequency() {
           </>
         )}
       />
+      <AdBannerSlot placement="frequency_bottom" />
     </SafeAreaView>
   );
 }
