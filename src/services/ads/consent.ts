@@ -59,9 +59,8 @@ export const gatherConsentOnBoot = async (): Promise<{
     // [iOS] Insert `await requestAttIfNeeded()` here before re-enabling iOS.
     const info = await AdsConsent.gatherConsent({
       debugGeography: AdsConsentDebugGeography.EEA,
-      testDeviceIdentifiers: ['F339BB1AB74569EEF0E8A608532372A1'],
+      // testDeviceIdentifiers: ['F339BB1AB74569EEF0E8A608532372A1','551FDC6DEF8015CFCCCB534091E2DE90'],
     });
-    console.log({ info })
     return {
       status: toStatusValue(info.status),
       canRequestAds: info.canRequestAds,

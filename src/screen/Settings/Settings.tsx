@@ -1,23 +1,19 @@
-import { useTheme } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
-import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import SettingsRow from '../../components/SettingsRow/SettingsRow';
-import { TextDefault } from '../../components/Text';
-import { useAdsConsent } from '../../services/ads/AdsConsentProvider';
-import { resetConsent } from '../../services/ads/consent';
-import { recordSensitiveAction } from '../../services/ads/frequencyCap';
-import { runRewardedAd } from '../../services/ads/rewarded';
-import { logAdRewardEarned } from '../../services/analytics/events';
-import {
-  APP_PREF_KEYS,
-  getPrefAsNumber,
-  setPrefNumber,
-} from '../../services/db/appPrefs.repo';
-import { useDbChange } from '../../services/db/dbEvents';
-import { useStyles } from './styles';
+import { useTheme } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import React, { useCallback, useEffect, useState } from "react";
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import SettingsRow from "../../components/SettingsRow/SettingsRow";
+import { TextDefault } from "../../components/Text";
+import { useAdsConsent } from "../../services/ads/AdsConsentProvider";
+import { resetConsent } from "../../services/ads/consent";
+import { recordSensitiveAction } from "../../services/ads/frequencyCap";
+import { runRewardedAd } from "../../services/ads/rewarded";
+import { logAdRewardEarned } from "../../services/analytics/events";
+import { APP_PREF_KEYS, getPrefAsNumber, setPrefNumber } from "../../services/db/appPrefs.repo";
+import { useDbChange } from "../../services/db/dbEvents";
+import { useStyles } from "./styles";
 
 /**
  * Duration of every Settings → "Hide ads" reward, in milliseconds.
@@ -38,33 +34,32 @@ const HIDE_ADS_REWARD_MS = 30 * 60_000; // 30 minutes
  */
 const HIDE_ADS_CONFIGS = [
   {
-    kind: 'screens',
+    kind: "screens",
     prefKey: APP_PREF_KEYS.adFreeUntil,
-    title: 'Hide ads while using the app',
-    subtitleIdle: 'Watch a short video ad to hide on-screen ads for 30 minutes',
-    iconIdle: 'gift',
-    iconActive: 'shield-alt',
-    analyticsKey: 'hide_screen_ads_30m',
+    title: "Hide ads while using the app",
+    subtitleIdle: "Watch a short video ad to hide on-screen ads for 30 minutes",
+    iconIdle: "gift",
+    iconActive: "shield-alt",
+    analyticsKey: "hide_screen_ads_30m",
   },
   {
-    kind: 'appOpen',
+    kind: "appOpen",
     prefKey: APP_PREF_KEYS.appOpenFreeUntil,
-    title: 'Hide ads when opening the app',
-    subtitleIdle:
-      'Watch a short video ad to skip the welcome-back ad for 30 minutes',
-    iconIdle: 'gift',
-    iconActive: 'shield-alt',
-    analyticsKey: 'hide_app_open_ads_30m',
+    title: "Hide ads when opening the app",
+    subtitleIdle: "Watch a short video ad to skip the welcome-back ad for 30 minutes",
+    iconIdle: "gift",
+    iconActive: "shield-alt",
+    analyticsKey: "hide_app_open_ads_30m",
   },
 ] as const;
 
-type HideKind = (typeof HIDE_ADS_CONFIGS)[number]['kind'];
+type HideKind = (typeof HIDE_ADS_CONFIGS)[number]["kind"];
 
 const formatTimeRemaining = (until: number): string => {
   const ms = until - Date.now();
-  if (ms <= 0) return '';
+  if (ms <= 0) return "";
   const mins = Math.ceil(ms / 60_000);
-  if (mins < 60) return `${mins} min${mins === 1 ? '' : 's'}`;
+  if (mins < 60) return `${mins} min${mins === 1 ? "" : "s"}`;
   const hrs = Math.floor(mins / 60);
   const remMins = mins % 60;
   return remMins === 0 ? `${hrs}h` : `${hrs}h ${remMins}m`;
@@ -87,8 +82,7 @@ function Settings() {
   const styles = useStyles();
   const router = useRouter();
   const db = useSQLiteContext();
-  const { privacyOptionsRequired, reopenForm, consentStatus, adsReady, canRequestAds } =
-    useAdsConsent();
+  const { privacyOptionsRequired, reopenForm, adsReady, canRequestAds } = useAdsConsent();
 
   const [hideAdsState, setHideAdsState] = useState<Record<HideKind, number | null>>({
     screens: null,
@@ -100,10 +94,7 @@ function Settings() {
   const [busyKind, setBusyKind] = useState<HideKind | null>(null);
 
   const reloadHideAdsState = useCallback(() => {
-    Promise.all([
-      getPrefAsNumber(db, APP_PREF_KEYS.adFreeUntil),
-      getPrefAsNumber(db, APP_PREF_KEYS.appOpenFreeUntil),
-    ])
+    Promise.all([getPrefAsNumber(db, APP_PREF_KEYS.adFreeUntil), getPrefAsNumber(db, APP_PREF_KEYS.appOpenFreeUntil)])
       .then(([screens, appOpen]) => setHideAdsState({ screens, appOpen }))
       .catch(() => setHideAdsState({ screens: null, appOpen: null }));
   }, [db]);
@@ -112,22 +103,22 @@ function Settings() {
     reloadHideAdsState();
   }, [reloadHideAdsState]);
 
-  useDbChange('app_prefs', reloadHideAdsState);
+  useDbChange("app_prefs", reloadHideAdsState);
 
   const adsAvailable = adsReady && canRequestAds;
 
   const handleNotifications = useCallback(() => {
     // `from=settings` signals the route wrapper to render a back button in the
     // header instead of the drawer hamburger — see app/notification.tsx.
-    router.push({ pathname: '/notification', params: { from: 'settings' } });
+    router.push({ pathname: "/notification", params: { from: "settings" } });
   }, [router]);
 
   const handlePrivacy = useCallback(() => {
-    router.push({ pathname: '/privacy', params: { from: 'settings' } });
+    router.push({ pathname: "/privacy", params: { from: "settings" } });
   }, [router]);
 
   const handleTerms = useCallback(() => {
-    router.push({ pathname: '/condition', params: { from: 'settings' } });
+    router.push({ pathname: "/condition", params: { from: "settings" } });
   }, [router]);
 
   const handleConsentReopen = useCallback(() => {
@@ -161,7 +152,7 @@ function Settings() {
           }
         }
       } catch (e) {
-        if (__DEV__) console.warn('[Settings] rewarded ad threw:', e);
+        if (__DEV__) console.warn("[Settings] rewarded ad threw:", e);
       } finally {
         setBusyKind(null);
       }
@@ -169,19 +160,12 @@ function Settings() {
     [busyKind, db],
   );
 
-  const consentSubtitle = privacyOptionsRequired
-    ? 'Update your ad personalisation choices'
-    : `Status: ${consentStatus.toLowerCase().replace('_', ' ')}`;
-
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.flex}>
-      <ScrollView
-        style={[styles.flex, styles.background]}
-        contentContainerStyle={styles.scrollContent}
-      >
+    <SafeAreaView edges={["bottom", "left", "right"]} style={styles.flex}>
+      <ScrollView style={[styles.flex, styles.background]} contentContainerStyle={styles.scrollContent}>
         <View style={styles.sectionWrap}>
           <TextDefault textColor={colors.fontSecondColor} small style={styles.sectionLabel}>
-            {'PREFERENCES'}
+            {"PREFERENCES"}
           </TextDefault>
           <SettingsRow
             icon="bell"
@@ -193,15 +177,16 @@ function Settings() {
 
         <View style={styles.sectionWrap}>
           <TextDefault textColor={colors.fontSecondColor} small style={styles.sectionLabel}>
-            {'PRIVACY & ADS'}
+            {"PRIVACY & ADS"}
           </TextDefault>
-          <SettingsRow
-            icon="ad"
-            title="Manage ad preferences"
-            subtitle={consentSubtitle}
-            onPress={handleConsentReopen}
-            disabled={!privacyOptionsRequired}
-          />
+          {privacyOptionsRequired ? (
+            <SettingsRow
+              icon="ad"
+              title="Manage ad preferences"
+              subtitle="Update your ad personalisation choices"
+              onPress={handleConsentReopen}
+            />
+          ) : null}
 
           {HIDE_ADS_CONFIGS.map((config) => {
             const until = hideAdsState[config.kind];
@@ -214,7 +199,7 @@ function Settings() {
                 title={isActive ? `Hidden — ${config.title.toLowerCase()}` : config.title}
                 subtitle={
                   isBusy
-                    ? 'Loading ad…'
+                    ? "Loading ad…"
                     : isActive
                       ? `Active for ${formatTimeRemaining(until ?? 0)}`
                       : config.subtitleIdle
@@ -225,22 +210,14 @@ function Settings() {
             );
           })}
 
-          <SettingsRow
-            icon="file-signature"
-            title="Privacy policy"
-            onPress={handlePrivacy}
-          />
-          <SettingsRow
-            icon="file-prescription"
-            title="Terms & conditions"
-            onPress={handleTerms}
-          />
+          <SettingsRow icon="file-signature" title="Privacy policy" onPress={handlePrivacy} />
+          <SettingsRow icon="file-prescription" title="Terms & conditions" onPress={handleTerms} />
         </View>
 
         {__DEV__ ? (
           <View style={styles.sectionWrap}>
             <TextDefault textColor={colors.fontSecondColor} small style={styles.sectionLabel}>
-              {'DEBUG (DEV ONLY)'}
+              {"DEBUG (DEV ONLY)"}
             </TextDefault>
             <SettingsRow
               icon="redo"

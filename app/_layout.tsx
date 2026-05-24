@@ -20,6 +20,19 @@ import { THEME, ThemeModeProvider, useThemeMode } from "../src/theme/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
+// Start the ads boot sequence at module load — as soon as the JS bundle is
+// evaluated. This kicks the network-bound work (SDK init, UMP gather, App
+// Open ad load) before React even mounts, shaving ~500ms-1s off the wait
+// vs. firing it from inside `AppBoot`'s effect. `startAdsBootEarly()` is
+// idempotent — `AdsConsentProvider` later adopts the same in-flight promise
+// via `awaitAdsBootResult()`.
+startAdsBootEarly().catch(() => {});
+
+// Minimum time the custom BootSplash stays visible on cold start. On warm
+// launches `bootstrap()` finishes in ~5ms — far too fast for BootSplash to
+// paint — so without this hold the user would never see the branded splash.
+const BOOT_SPLASH_MIN_MS = 800;
+
 const renderDrawerContent = (props: DrawerContentComponentProps) => <SideBar {...props} />;
 
 /**
@@ -32,28 +45,39 @@ function AppBoot({ children }: Readonly<{ children: React.ReactNode }>) {
   const [bootState, setBootState] = useState<AppBootState>("boot");
 
   useEffect(() => {
-    // Kick SDK init + UMP gather + App Open preload immediately, in parallel
-    // with bootstrap. The ad bytes start downloading while React is still
-    // mounting providers. See `services/ads/bootSequence.ts`.
-    startAdsBootEarly().catch(() => {});
-
+    const splashStartedAt = Date.now();
     (async () => {
       try {
         await bootstrap();
       } catch (e) {
         console.warn("[AppBoot] bootstrap failed; continuing to ready:", e);
       }
+      // Hold the BootSplash for at least BOOT_SPLASH_MIN_MS so users actually
+      // see the branded splash, even on a fast warm launch.
+      const elapsed = Date.now() - splashStartedAt;
+      if (elapsed < BOOT_SPLASH_MIN_MS) {
+        await new Promise((resolve) => setTimeout(resolve, BOOT_SPLASH_MIN_MS - elapsed));
+      }
       setBootState("ready");
+      // Defensive: ensure the native splash is gone once the Dashboard is
+      // about to render. BootSplash's onLayout normally handles this, but
+      // if BootSplash unmounts before its layout pass we still need the
+      // splash down so the Dashboard isn't hidden underneath it.
+      SplashScreen.hideAsync().catch(() => {});
       backgroundRefresh().catch(() => {});
     })();
   }, []);
 
-  // Native splash dismissal:
-  //   - "boot": keep up; we're still initialising.
-  //   - "ready": DO NOT hide here. `AdsConsentProvider` hides the native
-  //     splash together with its JS overlay once the App Open cold-start
-  //     resolves (ad shown + closed, or window expired) — eliminating any
-  //     seam where the Dashboard could flash before the ad.
+  // Splash dismissal flow:
+  //   - The native Expo splash is dropped by `BootSplash`'s onLayout on its
+  //     first paint, so the user sees the custom branded splash briefly
+  //     while `bootstrap()` runs (typically ~100-200ms on warm launch).
+  //   - Once `bootstrap()` finishes, `AppBoot` flips to "ready" and the
+  //     Dashboard mounts immediately via `AdsConsentProvider`. No splash
+  //     gating on the ad.
+  //   - The App Open ad's network load was kicked at module-load (top of
+  //     this file). When LOADED fires, the ad appears on top of the
+  //     Dashboard. User dismisses → back to Dashboard.
 
   if (bootState === "boot") return <BootSplash />;
   return <AdsConsentProvider>{children}</AdsConsentProvider>;

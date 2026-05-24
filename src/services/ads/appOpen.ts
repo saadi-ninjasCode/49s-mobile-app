@@ -30,7 +30,7 @@ import { canShowAppOpen, recordAppOpenShown } from './frequencyCap';
 
 const MIN_BACKGROUND_MS = 30_000; // skip warm-resume show if user only tabbed away briefly
 const AD_TTL_MS = 4 * 60 * 60_000; // Google's official 4-hour expiry
-const COLD_START_WINDOW_MS = 10_000; // cold-start can fire only if ad loads within this window
+const COLD_START_WINDOW_MS = 4_000; // cold-start can fire only if ad loads within this window
 
 let instance: AppOpenAd | null = null;
 let loaded = false;
