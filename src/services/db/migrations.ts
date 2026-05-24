@@ -53,12 +53,7 @@ const MIGRATIONS: Migration[] = [
         oldestContiguousDate INTEGER NOT NULL,
         hasMore INTEGER NOT NULL DEFAULT 1
       );
-    `);
-  },
-  async (db) => {
-    // v2 — app preferences: age gate, ad-free unlocks, generator bonuses, consent cache.
-    // Single key/value table; see src/services/db/appPrefs.repo.ts for the typed API.
-    await db.execAsync(`
+
       CREATE TABLE IF NOT EXISTS app_prefs (
         key       TEXT PRIMARY KEY,
         value     TEXT NOT NULL,

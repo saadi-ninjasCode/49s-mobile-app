@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AdBannerSlot from "../../components/AdBannerSlot/AdBannerSlot";
 import Balls from "../../components/Balls/Balls";
 import { EmptyView, LoadingView } from "../../components/ListState";
+import NativeAdCardLight from "../../components/NativeAdCardLight/NativeAdCardLight";
 import { TextDefault } from "../../components/Text";
 import { useDbChange } from "../../services/db/dbEvents";
 import * as gamesRepo from "../../services/db/games.repo";
@@ -69,6 +70,7 @@ function BallFrequency() {
     name: item.name,
     data: [{ hotBall: item.hotBall, coldBall: item.coldBall }] as BallFrequencySectionItem[],
     index,
+    slotId: `frequency_native_${item.gameId}`,
   }));
 
   return (
@@ -87,9 +89,10 @@ function BallFrequency() {
             </TextDefault>
           </View>
         )}
-        renderItem={({ item }) => (
+        renderItem={({ item, section }) => (
           <>
             <Balls name="Cold Balls" color={colors.facebook} array={item.coldBall} />
+            <NativeAdCardLight slotId={section.slotId} />
             <Balls name="Hot Balls" color={colors.google} array={item.hotBall} />
           </>
         )}

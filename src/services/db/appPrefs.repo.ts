@@ -5,15 +5,13 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  *
  * This is a small key/value store, intentionally separate from the Firestore-synced
  * `games` / `drawTypes` / `draws` tables — values here are device-local user state
- * (age gate decision, AdMob unlocks, consent cache) and never sync.
+ * (AdMob unlocks, consent cache) and never sync.
  *
  * All values are stored as TEXT; numeric values are stringified at write time.
  */
 
 // Canonical key list — extend here when adding a new pref.
 export const APP_PREF_KEYS = {
-  ageGateAccepted: 'age_gate_accepted',           // "true" | "false"
-  ageGateDecidedAt: 'age_gate_decided_at',         // epoch ms
   adFreeUntil: 'ad_free_until',                    // epoch ms — banner + native hidden window
   appOpenFreeUntil: 'app_open_free_until',         // epoch ms — App Open ads suppressed window
   consentStatusCache: 'consent_status_cache',      // last known UMP status string
@@ -140,8 +138,6 @@ export const getAllAppPrefs = async (db: SQLiteDatabase): Promise<AppPrefs> => {
   };
 
   return {
-    ageGateAccepted: readBool(APP_PREF_KEYS.ageGateAccepted),
-    ageGateDecidedAt: readNumber(APP_PREF_KEYS.ageGateDecidedAt),
     adFreeUntil: readNumber(APP_PREF_KEYS.adFreeUntil),
     appOpenFreeUntil: readNumber(APP_PREF_KEYS.appOpenFreeUntil),
     consentStatusCache: map.get(APP_PREF_KEYS.consentStatusCache) ?? null,
@@ -204,46 +200,3 @@ export const grantDrawFreeNavigations = (
   db: SQLiteDatabase,
   amount?: number,
 ): Promise<void> => grantQuota(db, APP_PREF_KEYS.drawFreeNavigations, amount);
-
-/** Convenience: record the user's age gate decision atomically. */
-export const recordAgeGateDecision = async (
-  db: SQLiteDatabase,
-  accepted: boolean,
-): Promise<void> => {
-  const now = Date.now();
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(
-      `INSERT OR REPLACE INTO app_prefs (key, value, updatedAt) VALUES (?, ?, ?)`,
-      APP_PREF_KEYS.ageGateAccepted,
-      accepted ? 'true' : 'false',
-      now,
-    );
-    await db.runAsync(
-      `INSERT OR REPLACE INTO app_prefs (key, value, updatedAt) VALUES (?, ?, ?)`,
-      APP_PREF_KEYS.ageGateDecidedAt,
-      String(now),
-      now,
-    );
-  });
-};
-
-/**
- * Clears the persisted age gate decision so the next boot treats the user as
- * never-decided. Used by the in-app "tapped this by mistake" retry on
- * UnderAgeScreen — re-showing AgeGateModal is preferable to instructing the
- * user to reinstall.
- */
-export const clearAgeGateDecision = async (
-  db: SQLiteDatabase,
-): Promise<void> => {
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(
-      `DELETE FROM app_prefs WHERE key = ?`,
-      APP_PREF_KEYS.ageGateAccepted,
-    );
-    await db.runAsync(
-      `DELETE FROM app_prefs WHERE key = ?`,
-      APP_PREF_KEYS.ageGateDecidedAt,
-    );
-  });
-};

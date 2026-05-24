@@ -24,9 +24,9 @@ import {
 import { scale } from "../../utilities";
 import { useStyles } from "./styles";
 
-// Inject a native ad slot after every 6th draw (positions 5, 11, 17, ...).
-// Keeps density low enough that the list still reads as a results history,
-// not an ad feed.
+// Inject a native ad slot after the latest result and then every 6 draws
+// (positions 0, 6, 12, ...). Keeps density low enough that the list still
+// reads as a results history, not an ad feed.
 const AD_SLOT_INTERVAL = 6;
 
 const buildDrawList = (drawItems: DrawWithContext[]): DrawListItem[] => {
@@ -34,7 +34,7 @@ const buildDrawList = (drawItems: DrawWithContext[]): DrawListItem[] => {
   let adIndex = 0;
   for (let i = 0; i < drawItems.length; i++) {
     result.push({ kind: "draw", draw: drawItems[i], drawIndex: i });
-    if (i % AD_SLOT_INTERVAL === AD_SLOT_INTERVAL - 1) {
+    if (i % AD_SLOT_INTERVAL === 0) {
       result.push({ kind: "ad", slotId: `draw-ad-${adIndex++}` });
     }
   }
@@ -242,12 +242,28 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
   const renderItem = useCallback<ListRenderItem<DrawListItem>>(
     ({ item }) => {
       if (item.kind === "ad") {
+        // The first ad sits between the latest result and the rest — promote
+        // the "Previous Results" header above it so the ad belongs to that
+        // section rather than the latest-result one.
+        const isFirstAd = item.slotId === "draw-ad-0";
+        if (isFirstAd && draws.length > 2) {
+          return (
+            <>
+              <TextDefault textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
+                {"Previous Results"}
+              </TextDefault>
+              <NativeAdCardCompact slotId={item.slotId} />
+            </>
+          );
+        }
         return <NativeAdCardCompact slotId={item.slotId} />;
       }
 
       // Header decisions are based on the draw's position in the underlying
       // result list (`drawIndex`), NOT the FlatList index — ad slots shift
       // the FlatList index but not the meaning of "first / second result".
+      // The "Previous Results" header is rendered above the first ad slot
+      // (see ad branch above), so it's intentionally omitted on drawIndex 1.
       const headers = [];
       if (item.drawIndex === 0 && draws.length === 1) {
         headers.push(
@@ -259,12 +275,6 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
         headers.push(
           <TextDefault key={"latest_title"} textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
             {"Latest Result"}
-          </TextDefault>,
-        );
-      } else if (item.drawIndex === 1 && draws.length > 2) {
-        headers.push(
-          <TextDefault key={"prev_title"} textColor={colors.brandAccent} H4 center style={styles.headerStyles}>
-            {"Previous Results"}
           </TextDefault>,
         );
       }

@@ -30,11 +30,7 @@ function NativeAdCard(_props: Readonly<NativeAdCardProps>) {
 
   return (
     <NativeAdView nativeAd={nativeAd} style={styles.drawBox}>
-      <View style={styles.boxHeader}>
-        <TextDefault H3 bold center textColor={colors.headerBackground}>
-          {"Sponsored"}
-        </TextDefault>
-      </View>
+      <View style={styles.boxHeader} />
 
       <View style={styles.boxContainer}>
         <View style={styles.boxInfo}>

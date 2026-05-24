@@ -62,7 +62,7 @@ export const logInterstitialSkippedByCap = (reason: string): void => {
 };
 
 // ----------------------------------------------------------------------------
-// Consent + age gate
+// Consent
 // ----------------------------------------------------------------------------
 
 export const logConsentStatus = (status: AdsConsentStatusValue, region?: string): void => {
@@ -70,8 +70,4 @@ export const logConsentStatus = (status: AdsConsentStatusValue, region?: string)
     status,
     ...(region ? { region } : {}),
   });
-};
-
-export const logAgeGateDecision = (accepted: boolean): void => {
-  safeLog('age_gate_decision', { accepted });
 };

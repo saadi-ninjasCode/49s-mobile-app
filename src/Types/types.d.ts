@@ -78,8 +78,6 @@ interface TimeLeft {
  * allocation (see `FREE_ACTION_INITIAL` in `appPrefs.repo.ts`).
  */
 interface AppPrefs {
-  readonly ageGateAccepted: boolean | null;
-  readonly ageGateDecidedAt: number | null;
   readonly adFreeUntil: number | null;
   readonly appOpenFreeUntil: number | null;
   readonly consentStatusCache: string | null;

@@ -1,5 +1,5 @@
 declare global {
-  // ---- Consent + age gate state machine ----
+  // ---- Consent state machine ----
 
   /**
    * Whether we have a usable consent decision yet. Aligns with the UMP SDK's
@@ -8,7 +8,7 @@ declare global {
   type AdsConsentStatusValue = 'UNKNOWN' | 'NOT_REQUIRED' | 'REQUIRED' | 'OBTAINED';
 
   /** Top-level boot state machine. `_layout.tsx` renders a different tree per state. */
-  type AppBootState = 'boot' | 'ageGate' | 'consent' | 'ready' | 'underAge';
+  type AppBootState = 'boot' | 'ready';
 
   /** Result of the early UMP boot path — see `services/ads/bootSequence.ts`. */
   interface AdsBootResult {
@@ -37,16 +37,6 @@ declare global {
     readonly privacyOptionsRequired: boolean;
     /** Re-open the UMP privacy options form. No-op if not available. */
     readonly reopenForm: () => Promise<void>;
-  }
-
-  // ---- AgeGate components ----
-
-  interface AgeGateModalProps {
-    readonly onDecision: (accepted: boolean) => void;
-  }
-
-  interface UnderAgeScreenProps {
-    readonly onRetry: () => void;
   }
 
   // ---- AdBannerSlot ----
@@ -83,6 +73,10 @@ declare global {
   }
 
   interface NativeAdCardCompactProps {
+    readonly slotId: string;
+  }
+
+  interface NativeAdCardLightProps {
     readonly slotId: string;
   }
 

@@ -8,18 +8,7 @@ import { scale } from "../../utilities";
 import { TextDefault } from "../Text";
 import { useStyles } from "./styles";
 
-/**
- * Compact native ad — woven into the Draw screen FlatList.
- *
- * Visually mirrors `DrawCard` — a single dark `headerBackground` container
- * with rounded corners and no pill header. To stay policy-compliant the
- * "Sponsored" attribution is rendered as a coloured pill at the top-left
- * corner of the card, distinct from the body so users can't confuse the ad
- * with a real draw result.
- *
- * Shares its load lifecycle with `NativeAdCard` via `useNativeAd`.
- */
-function NativeAdCardCompact(_props: Readonly<NativeAdCardCompactProps>) {
+function NativeAdCardLight(_props: Readonly<NativeAdCardLightProps>) {
   const { colors } = useTheme() as NavigationTheme;
   const styles = useStyles();
   const nativeAd = useNativeAd();
@@ -29,7 +18,11 @@ function NativeAdCardCompact(_props: Readonly<NativeAdCardCompactProps>) {
   return (
     <NativeAdView nativeAd={nativeAd} style={styles.drawBox}>
       <View style={styles.boxContainer}>
-        <View style={styles.sponsoredPill} />
+        <View style={styles.sponsoredPill}>
+          <TextDefault small bold textColor={colors.fontWhite}>
+            Sponsored
+          </TextDefault>
+        </View>
 
         <View style={styles.row}>
           {nativeAd.icon ? (
@@ -43,7 +36,7 @@ function NativeAdCardCompact(_props: Readonly<NativeAdCardCompactProps>) {
             <NativeAsset assetType={NativeAssetType.HEADLINE}>
               <TextDefault
                 bold
-                textColor={colors.headerText}
+                textColor={colors.fontMainColor}
                 style={styles.headline}
                 numberOfLines={2}
               >
@@ -67,7 +60,7 @@ function NativeAdCardCompact(_props: Readonly<NativeAdCardCompactProps>) {
 
         <NativeAsset assetType={NativeAssetType.BODY}>
           <TextDefault
-            textColor={colors.headerText}
+            textColor={colors.fontMainColor}
             style={styles.body}
             numberOfLines={3}
           >
@@ -80,10 +73,10 @@ function NativeAdCardCompact(_props: Readonly<NativeAdCardCompactProps>) {
             android_ripple={{ color: colors.drawerSelected, foreground: true }}
             style={styles.ctaButton}
           >
-            <TextDefault bold textColor={colors.yellow}>
+            <TextDefault bold textColor={colors.fontWhite}>
               {nativeAd.callToAction}
             </TextDefault>
-            <FontAwesome5 name="chevron-right" size={scale(12)} color={colors.yellow} />
+            <FontAwesome5 name="chevron-right" size={scale(12)} color={colors.fontWhite} />
           </Pressable>
         </NativeAsset>
       </View>
@@ -91,4 +84,4 @@ function NativeAdCardCompact(_props: Readonly<NativeAdCardCompactProps>) {
   );
 }
 
-export default React.memo(NativeAdCardCompact);
+export default React.memo(NativeAdCardLight);
