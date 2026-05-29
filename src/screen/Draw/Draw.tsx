@@ -91,12 +91,16 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
   const { drawType, game } = useDrawTypeContext(drawTypeId);
 
   const requestIdRef = useRef(0);
+  const loadMoreReqRef = useRef(0);
 
   // Reset state when navigating to a different drawType
   useEffect(() => {
     setSelectedDate(null);
     setVisibleCount(PAGE_SIZE);
     setDraws([]);
+    // Invalidate any in-flight loadMore so its setVisibleCount can't bleed
+    // into the new drawType's counter (which we just reset to PAGE_SIZE).
+    loadMoreReqRef.current++;
   }, [drawTypeId]);
 
   const compose = useCallback(
@@ -190,17 +194,20 @@ function Draw({ drawTypeId }: Readonly<DrawProps>) {
 
   const handleLoadMore = useCallback(async () => {
     if (loadingMore || !hasMore || !drawTypeId || selectedDate) return;
-    const reqId = ++requestIdRef.current;
+    // Dedicated reqRef so a re-render from setVisibleCount (which invalidates
+    // requestIdRef via the main reload effect) can't strand the spinner or
+    // skip the visibleCount/hasMore updates on the next scroll.
+    const reqId = ++loadMoreReqRef.current;
     setLoadingMore(true);
     try {
       const result = await loadNextPage(drawTypeId, PAGE_SIZE);
-      if (reqId !== requestIdRef.current) return;
+      if (reqId !== loadMoreReqRef.current) return;
       if (result.count > 0) setVisibleCount((prev) => prev + result.count);
       setHasMore(result.hasMore);
     } catch {
       // pagination errors stay silent — user keeps existing list, can retry by scrolling again
     } finally {
-      if (reqId === requestIdRef.current) setLoadingMore(false);
+      setLoadingMore(false);
     }
   }, [loadingMore, hasMore, drawTypeId, selectedDate]);
 

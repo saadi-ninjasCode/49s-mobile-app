@@ -105,6 +105,24 @@ export const getContiguousDraws = async (
   return rows.map(rowToDraw);
 };
 
+export const getLocalDrawsBefore = async (
+  db: SQLiteDatabase,
+  drawTypeId: string,
+  beforeMs: number,
+  rowLimit: number,
+): Promise<Draw[]> => {
+  const rows = await db.getAllAsync<DrawRow>(
+    `SELECT * FROM draws
+     WHERE drawTypeId = ? AND date < ? AND deletedAt IS NULL
+     ORDER BY date DESC
+     LIMIT ?`,
+    drawTypeId,
+    beforeMs,
+    rowLimit,
+  );
+  return rows.map(rowToDraw);
+};
+
 export const getDrawsForDay = async (
   db: SQLiteDatabase,
   drawTypeId: string,

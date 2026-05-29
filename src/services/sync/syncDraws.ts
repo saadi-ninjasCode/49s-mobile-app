@@ -11,6 +11,10 @@ export const PAGE_SIZE = 10;
 /**
  * Loads the next contiguous page (older than current head) and advances
  * oldestContiguousDate to the date of the last fetched row.
+ *
+ * SQLite-first: refreshDrawsIfStale's watermark sync may have already pulled
+ * older rows into SQLite (e.g. after a Firestore backfill). Serve them locally
+ * before round-tripping to Firestore — same idempotent boundary advance.
  */
 export async function loadNextPage(
   drawTypeId: string,
@@ -20,6 +24,18 @@ export async function loadNextPage(
   const state = await drawsRepo.getPaginationState(db, drawTypeId);
   if (!state) return { count: 0, hasMore: false };
   if (!state.hasMore) return { count: 0, hasMore: false };
+
+  const localOlder = await drawsRepo.getLocalDrawsBefore(
+    db,
+    drawTypeId,
+    state.oldestContiguousDate,
+    pageSize,
+  );
+  if (localOlder.length === pageSize) {
+    const newOldest = localOlder.at(-1)!.date;
+    await drawsRepo.setPaginationState(db, drawTypeId, newOldest, true);
+    return { count: localOlder.length, hasMore: true };
+  }
 
   const draws = await queryDrawsBefore(drawTypeId, state.oldestContiguousDate, pageSize);
   if (draws.length === 0) {
