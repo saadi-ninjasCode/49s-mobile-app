@@ -1,6 +1,6 @@
 release{
-            keyAlias 'key'
-            keyPassword 'lotter-321'
-            storeFile file('Untitled.jks')
-            storePassword 'lotter-321'
+            keyAlias 'key0'
+            keyPassword 'result2026'
+            storeFile file('../../release-keystore.jks')
+            storePassword 'result2026'
         }
