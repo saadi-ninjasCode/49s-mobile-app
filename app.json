@@ -18,6 +18,7 @@
       }
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon-foreground.png",
         "monochromeImage": "./assets/images/icon-monochrome.png",
@@ -27,14 +28,9 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.sameet.uk49sresults",
       "googleServicesFile": "./google-services.json",
-      "permissions": [
-        "android.permission.POST_NOTIFICATIONS"
-      ]
+      "permissions": ["android.permission.POST_NOTIFICATIONS"]
     },
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
     "plugins": [
       "expo-router",
       [
@@ -67,22 +63,13 @@
         {
           "ios": {
             "useFrameworks": "static",
-            "forceStaticLinking": [
-              "RNFBApp",
-              "RNFBFirestore",
-              "RNFBMessaging",
-              "RNFBAnalytics",
-              "GoogleMobileAds"
-            ]
+            "forceStaticLinking": ["RNFBApp", "RNFBFirestore", "RNFBMessaging", "RNFBAnalytics", "GoogleMobileAds"]
           },
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "useLegacyPackaging": true,
-            "buildArchs": [
-              "arm64-v8a",
-              "armeabi-v7a"
-            ]
+            "useLegacyPackaging": false,
+            "buildArchs": ["arm64-v8a", "armeabi-v7a"]
           }
         }
       ],
