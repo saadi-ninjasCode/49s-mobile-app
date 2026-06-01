@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "UK 49's Results",
+    "name": "UK49s Results",
     "slug": "49s-mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -81,7 +81,7 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "androidAppId": "ca-app-pub-3835778866928058~7533670388",
           "delayAppMeasurementInit": true,
           "optimizeInitialization": true,
           "optimizeAdLoading": true

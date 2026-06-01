@@ -147,14 +147,12 @@ const attemptShow = async (
   fromColdStart: boolean = false,
 ): Promise<void> => {
   if (suppressedReason !== null) {
-    if (__DEV__) console.log(`[appOpen] suppressed: ${suppressedReason}`);
     suppressedReason = null;
     if (fromColdStart) signalColdStartComplete();
     return;
   }
 
   if (!canShowAppOpen()) {
-    if (__DEV__) console.log('[appOpen] suppressed: sensitive-action cooldown');
     if (fromColdStart) signalColdStartComplete();
     return;
   }
@@ -162,7 +160,6 @@ const attemptShow = async (
   try {
     const until = await getPrefAsNumber(db, APP_PREF_KEYS.appOpenFreeUntil);
     if (until !== null && until > Date.now()) {
-      if (__DEV__) console.log('[appOpen] suppressed: app_open_free_until active');
       if (fromColdStart) signalColdStartComplete();
       return;
     }
