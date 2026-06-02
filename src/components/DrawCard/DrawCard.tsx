@@ -12,25 +12,25 @@ function DrawCard(props: Readonly<DrawWithContext>) {
   return (
     <View style={styles.drawBox}>
       <View style={styles.boxContainer}>
-        <TextDefault numberOfLines={1} textColor={colors.headerText} H5 bold>
+        <TextDefault numberOfLines={2} center textColor={colors.headerText} H5 bold>
           {dual ? dual.deviceLocal : "-"}
         </TextDefault>
         {dual && !dual.matchesLondonDate && (
-          <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
+          <TextDefault numberOfLines={2} center textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
             {`${dual.london} (Europe/London)`}
           </TextDefault>
         )}
         <View style={styles.ballRow}>
           {props.balls.filter(Boolean).map((item, index) => (
             <View style={[styles.ballContainer, { backgroundColor: colors.yellow }]} key={index}>
-              <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center>
+              <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center numberOfLines={1}>
                 {item}
               </TextDefault>
             </View>
           ))}
           {props.specialBalls.filter(Boolean).map((item, index) => (
             <View style={[styles.ballContainer, { backgroundColor: colors.green }]} key={index}>
-              <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center>
+              <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center numberOfLines={1}>
                 {item}
               </TextDefault>
             </View>

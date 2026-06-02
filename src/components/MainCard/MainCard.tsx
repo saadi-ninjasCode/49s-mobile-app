@@ -139,19 +139,19 @@ function MainCard(props: Readonly<DashboardEntry>) {
         </View>
         <View style={styles.boxContainer}>
           <View style={styles.boxInfo}>
-            <TextDefault numberOfLines={1} textColor={colors.headerText} H5 bold style={alignment.MTxSmall}>
+            <TextDefault numberOfLines={2} center textColor={colors.headerText} H5 bold style={alignment.MTxSmall}>
               {dual ? dual.deviceLocal : "-"}
             </TextDefault>
             {dual && !dual.matchesLondonDate && (
-              <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
+              <TextDefault numberOfLines={2} center textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
                 {`${dual.london} (Europe/London)`}
               </TextDefault>
             )}
-            <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} style={alignment.MTxSmall}>
+            <TextDefault numberOfLines={2} center textColor={colors.fontSecondColor} style={alignment.MTxSmall}>
               {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone)} (${deviceTz})`}
             </TextDefault>
             {showScheduleTimeRow && (
-              <TextDefault numberOfLines={1} textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
+              <TextDefault numberOfLines={2} center textColor={colors.fontSecondColor} small style={alignment.MTxSmall}>
                 {`${formatLocalDrawTime(props.drawType.hour, props.drawType.minute, props.drawType.timeZone, props.drawType.timeZone)} (${props.drawType.timeZone})`}
               </TextDefault>
             )}
@@ -160,14 +160,14 @@ function MainCard(props: Readonly<DashboardEntry>) {
                 <>
                   {draw.balls.filter(Boolean).map((item, index) => (
                     <View style={[styles.ballContainer, { backgroundColor: colors.yellow }]} key={index}>
-                      <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center>
+                      <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center numberOfLines={1}>
                         {item}
                       </TextDefault>
                     </View>
                   ))}
                   {draw.specialBalls.filter(Boolean).map((item, index) => (
                     <View style={[styles.ballContainer, { backgroundColor: colors.green }]} key={index}>
-                      <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center>
+                      <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center numberOfLines={1}>
                         {item}
                       </TextDefault>
                     </View>

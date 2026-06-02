@@ -1,15 +1,19 @@
 import { useTheme } from '@react-navigation/native';
 import { useMemo } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import { alignment, scale } from '../../utilities';
 
 export const useStyles = () => {
   const { colors } = useTheme() as NavigationTheme;
+  // Grow the ball circle with the OS font scale so larger fonts never clip the
+  // number — the text and the circle scale together, keeping the ratio constant
+  // while reserving real layout height (an aspectRatio-only box does not).
+  const { fontScale } = useWindowDimensions();
+  const ballSize = scale(30) * fontScale;
   return useMemo(
     () =>
       StyleSheet.create({
         font: {
-          ...alignment.PxSmall,
           includeFontPadding: false,
           textAlignVertical: 'center',
         },
@@ -36,15 +40,16 @@ export const useStyles = () => {
           ...alignment.MTmedium,
         },
         ballContainer: {
-          width: scale(30),
-          height: scale(30),
+          width: ballSize,
+          height: ballSize,
           justifyContent: 'center',
           alignItems: 'center',
-          borderRadius: scale(15),
+          borderRadius: ballSize / 2,
+          overflow: 'hidden',
           ...alignment.MRxSmall,
           ...alignment.MTxSmall,
         },
       }),
-    [colors],
+    [colors, ballSize],
   );
 };

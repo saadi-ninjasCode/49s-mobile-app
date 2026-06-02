@@ -243,7 +243,7 @@ function Generator() {
             <View style={styles.ballRow}>
               {mainBalls.map((value, index) => (
                 <View style={styles.ballContainer} key={slotIds[index]}>
-                  <TextDefault textColor={colors.headerBackground} bold H4 center>
+                  <TextDefault style={styles.font} textColor={colors.headerBackground} bold H4 center numberOfLines={1}>
                     {value}
                   </TextDefault>
                 </View>
@@ -252,7 +252,7 @@ function Generator() {
                 <>
                   <View style={styles.boosterDivider} />
                   <View style={styles.boosterBallContainer}>
-                    <TextDefault textColor={colors.fontWhite} bold H4 center>
+                    <TextDefault textColor={colors.fontWhite} bold H4 center numberOfLines={1}>
                       {booster}
                     </TextDefault>
                   </View>
